@@ -15,7 +15,8 @@ Currently this is done using the command line and [WP-CLI](https://wp-cli.org/).
 You can type `wp help lifx` to see all the commands. Here are some common ones:
 
 * `wp lifx get_token` - This will print your LIFX personal access token on the command line.
-* `wp lifx check_token` - This checks to see if your LIFX person token authenicates correctly.
+* `wp lifx check_token` - This checks to see if your LIFX person token authenticates correctly.
+* `wp lifx list_lights` - This will list your the LIFX smart lights.
 * `wp lifx toggle` - This will toggle the power state of all lights.
 * `wp lifx power on` - This will turn all lights on.
 * `wp lifx power off` - This will turn all lights off.
