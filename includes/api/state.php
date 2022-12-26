@@ -4,7 +4,7 @@ namespace Lifx\State;
 /**
  * A function that we can use to set the state of the lamp.
  * https://api.developer.lifx.com/reference/set-state
- * 
+ *
  * @param $payload
  * @param $selector
  *
@@ -22,8 +22,8 @@ function state( $payload, $selector = 'all' ) {
 	$defaults = [
 		'method' => 'PUT',
 		'body' => [
-			'power'  => 'on',
-			'fast'   => (bool) true,
+			'power' => 'on',
+			'fast'  => (bool) true,
 		],
 	];
 
@@ -36,7 +36,11 @@ function state( $payload, $selector = 'all' ) {
 		$payload
 	);
 
-	$response = json_decode( wp_remote_retrieve_body( $request ), true );
+	if ( 401 === wp_remote_retrieve_response_code( $request ) ) {
+		$response = new \WP_Error( '401', 'We could not authenticate using your LIFX Personal Access Token.' );
+	} else {
+		$response = json_decode( wp_remote_retrieve_body( $request ), true );
+	}
 
 	return $response;
 }

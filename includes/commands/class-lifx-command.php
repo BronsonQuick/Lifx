@@ -126,6 +126,10 @@ class Lifx_Command {
 			$response = \Lifx\Power\power( $power, $fast );
 		}
 
+		if ( is_wp_error( $response ) ) {
+			return WP_CLI::error( $response->get_error_message() );
+		}
+
 		// We don't get results when we set fast to true so we need to check the http response code.
 		if ( ! empty( $assoc_args['fast'] ) ) {
 			if ( 202 !== wp_remote_retrieve_response_code( $response ) ) {
