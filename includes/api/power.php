@@ -1,6 +1,8 @@
 <?php
 namespace Lifx\Power;
 
+use function Lifx\State\state;
+
 function toggle_lights( $selector = 'all' ) {
 	$headers = \Lifx\Auth\get_headers();
 
@@ -20,33 +22,15 @@ function toggle_lights( $selector = 'all' ) {
 	return $response;
 }
 
-function power( $state = 'on', $selector = 'all', $fast = false ) {
-	$headers = \Lifx\Auth\get_headers();
-
-	if ( is_wp_error( $headers ) ) {
-		return $headers;
-	}
-
-	$endpoint = LIFX_ENDPOINT . "/lights/$selector/state";
-
-	$body = [
-		'method' => 'PUT',
-		'body' => json_encode(
-			[
-				'power' => $state,
-				'fast'  => (bool) $fast,
-			]
-		)
+function power( $state = 'on', $fast = false, $selector = 'all' ) {
+	$payload = [
+		'body' => [
+			'power' => $state,
+			'fast'  => (bool) $fast,
+		]
 	];
 
-	$payload = array_merge( $headers, $body );
+	$request = state( $payload, $selector );
 
-	$toggle = wp_safe_remote_post(
-		$endpoint,
-		$payload
-	);
-
-	$response = json_decode( wp_remote_retrieve_body( $toggle ), true );
-
-	return $response;
+	return $request;
 }

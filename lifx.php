@@ -29,6 +29,7 @@ require_once __DIR__ . '/includes/api/effects.php';
 require_once __DIR__ . '/includes/api/list.php';
 require_once __DIR__ . '/includes/api/power.php';
 require_once __DIR__ . '/includes/api/scenes.php';
+require_once __DIR__ . '/includes/api/state.php';
 
 if ( defined( 'WP_CLI' ) && WP_CLI ) {
 	require_once __DIR__ . '/includes/commands/class-lifx-command.php';

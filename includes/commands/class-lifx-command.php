@@ -1,5 +1,11 @@
 <?php
 use Lifx\Auth;
+use function Lifx\List_Lights\list_lights;
+use function Lifx\Power\power;
+use function Lifx\Power\toggle_lights;
+use function Lifx\State\get_colours;
+use function Lifx\State\validate_colour;
+use function Lifx\State\colour;
 
 class Lifx_Command {
 	/**
@@ -51,7 +57,7 @@ class Lifx_Command {
 		} else {
 			$selector = 'all';
 		}
-		$response = \Lifx\Power\toggle_lights( $selector );
+		$response = toggle_lights( $selector );
 		if ( ! empty( $response ) ) {
 			foreach ( $response['results'] as $light ) {
 				WP_CLI::success( "{$light['label']} is now {$light['power']}." );
@@ -83,7 +89,7 @@ class Lifx_Command {
 		} else {
 			$selector = 'all';
 		}
-		$response = \Lifx\List_Lights\list_lights( $selector );
+		$response = list_lights( $selector );
 		WP_CLI\Utils\format_items( 'table', $response, [ 'id', 'label', 'power', 'brightness', 'connected' ] );
 	}
 
@@ -99,6 +105,9 @@ class Lifx_Command {
 	 * [--selector=<type>]
 	 * : The selector you wish to use. i.e. label, id, group_id, location, location_id
 	 *
+	 * [--fast=<bool>]
+	 * : Whether or not to return a response from the LIFX API.
+	 *
 	 * ## EXAMPLES
 	 *
 	 * wp lifx power on
@@ -112,12 +121,19 @@ class Lifx_Command {
 		if ( ! empty( $args ) ) {
 			list( $power ) = $args;
 		}
-		if ( ! empty( $assoc_args['selector'] ) && ! empty( $assoc_args['fast'] ) ) {
-			$response = \Lifx\Power\power( $power, $assoc_args['selector'], $assoc_args['fast'] );
-		} elseif ( ! empty( $assoc_args['selector'] ) ) {
-			$response = \Lifx\Power\power( $power, $assoc_args['selector'] );
+		if ( ! empty( $assoc_args['fast'] ) ) {
+			$fast = $assoc_args['fast'];
 		} else {
-			$response = \Lifx\Power\power( $power );
+			$fast = false;
+		}
+		if ( ! empty( $assoc_args['selector'] ) ) {
+			$response = power( $power, $assoc_args['selector'], $fast );
+		} else {
+			$response = power( $power, $fast );
+		}
+
+		if ( is_wp_error( $response ) ) {
+			return WP_CLI::error( $response->get_error_message() );
 		}
 
 		// We don't get results when we set fast to true so we need to check the http response code.
@@ -139,6 +155,154 @@ class Lifx_Command {
 				WP_CLI::error( 'Something went wrong' );
 			}
 		}
+	}
+
+	/**
+	 * Checks to see if the string the user has entered is a valid colour.
+	 * https://api.developer.lifx.com/docs/colors
+	 *
+	 * ## OPTIONS
+	 *
+	 * <colour>
+	 * : The state of the light. i.e. on or off
+	 *
+	 *
+	 * ## EXAMPLES
+	 *
+	 * wp lifx validate_colour red
+	 * wp lifx validate_colour "#663399"
+	 * wp lifx validate_colour "hue:120 saturation:1.0 brightness:0.5"
+	 * wp lifx validate_colour "kelvin:2700 brightness: 0.5"
+	 * wp lifx validate_colour "rgb:0,255,255"
+	 * wp lifx validate_colour "kelvin:5000"
+	 * wp lifx validate_colour "kelvin:2700 saturation:1"
+	 * wp lifx validate_colour "saturation:0.25"
+	 *
+	 * @when after_wp_load
+	 */
+	public function validate_colour( $args ) {
+		if ( ! empty( $args ) ) {
+			list( $colour ) = $args;
+			$colour = strtolower( $colour );
+		} else {
+			WP_CLI::error( 'Please pass in a colour string, hex value, or string.' );
+		}
+
+		$colours = get_colours();
+
+		// If the colour is in our list of colours then return the Hex value.
+		if ( true === array_key_exists( $colour, $colours ) ) {
+			return WP_CLI::success( "$colour is a successful colour and the hex value is $colours[$colour]." );
+		}
+
+		/**
+		 * If the colour name or hex values doesn't exist then we should validate it via the LIFX API.
+		 * https://api.developer.lifx.com/reference/validate-color
+		 */
+		if ( false === in_array( $colour, $colours, true ) ) {
+			$validation = validate_colour( $colour );
+			if ( is_wp_error( $validation ) ) {
+				return $validation;
+			}
+		}
+
+		WP_CLI::success( "$colour is a successful colour." );
+	}
+
+	/**
+	 * Sets the power for all lights or a specific light.
+	 * https://api.developer.lifx.com/docs/colors
+	 *
+	 * ## OPTIONS
+	 *
+	 * <colour>
+	 * : The state of the light. i.e. on or off
+	 *
+	 * [--selector=<type>]
+	 * : The selector you wish to use. i.e. label, id, group_id, location, location_id
+	 *
+	 * [--fast=<bool>]
+	 * : Whether or not to return a response from the LIFX API.
+	 *
+	 * ## EXAMPLES
+	 *
+	 * wp lifx colour rebeccapurple
+	 * wp lifx colour rebeccapurple --fast=true
+	 * wp lifx colour rebeccapurple --selector=label:"I Love Lamp" --fast=true
+	 * wp lifx colour "#663399"
+	 * wp lifx colour "hue:120 saturation:1.0 brightness:0.5"
+	 * wp lifx colour "kelvin:2700 brightness: 0.5"
+	 * wp lifx colour "rgb:0,255,255"
+	 * wp lifx colour "kelvin:5000"
+	 * wp lifx colour "kelvin:2700 saturation:1"
+	 * wp lifx colour "saturation:0.25"
+	 *
+	 * @when after_wp_load
+	 */
+	public function colour( $args, $assoc_args ) {
+		if ( ! empty( $args ) ) {
+			list( $colour ) = $args;
+			$colour = strtolower( $colour );
+		} else {
+			WP_CLI::error( 'Please pass in a colour string, hex value, or string.' );
+		}
+
+		if ( ! empty( $assoc_args['fast'] ) ) {
+			$fast = $assoc_args['fast'];
+		} else {
+			$fast = false;
+		}
+
+		if ( ! empty( $assoc_args['selector'] ) ) {
+			$selector = $assoc_args['selector'];
+		} else {
+			$selector = 'all';
+		}
+
+		$response = colour( $colour, $fast, $selector );
+
+		if ( 207 !== wp_remote_retrieve_response_code( $response ) && 202 !== wp_remote_retrieve_response_code( $response ) ) {
+			return WP_CLI::error( $response->get_error_message() );
+		}
+
+		// The response will be a 207 if we haven't passed through the fast option.
+		if ( 207 === wp_remote_retrieve_response_code( $response ) ) {
+			$payload = json_decode( wp_remote_retrieve_body( $response ), true );
+			foreach ( $payload['results'] as $light ) {
+				WP_CLI::success( "{$light['label']} is now set to $colour." );
+			}
+		}
+
+		// We've passed in fast so we don't get a response payload from the API.
+		if ( 202 === wp_remote_retrieve_response_code( $response ) ) {
+			if ( 'all' === $selector ) {
+				$status = 'All lights are';
+			} else {
+				$status = "$selector is";
+			}
+			WP_CLI::success( "$status now set to $colour." );
+		}
+	}
+
+	/**
+	 * List the colour names you can use with our plugin.
+	 *
+	 * ## EXAMPLES
+	 *
+	 * wp lifx colour_list
+	 *
+	 * @when after_wp_load
+	 */
+	public function colour_list() {
+		$colours = get_colours();
+		$list = [];
+		foreach ( $colours as $key => $value ) {
+			$list[] = [
+				'name'  => $key,
+				'value' => $value
+			];
+		}
+		WP_CLI\Utils\format_items( 'table', $list, [ 'name', 'value' ] );
 	}
 }
 
