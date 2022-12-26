@@ -99,6 +99,9 @@ class Lifx_Command {
 	 * [--selector=<type>]
 	 * : The selector you wish to use. i.e. label, id, group_id, location, location_id
 	 *
+	 * [--fast=<bool>]
+	 * : Whether or not to return a response from the LIFX API.
+	 *
 	 * ## EXAMPLES
 	 *
 	 * wp lifx power on
@@ -112,12 +115,15 @@ class Lifx_Command {
 		if ( ! empty( $args ) ) {
 			list( $power ) = $args;
 		}
-		if ( ! empty( $assoc_args['selector'] ) && ! empty( $assoc_args['fast'] ) ) {
-			$response = \Lifx\Power\power( $power, $assoc_args['selector'], $assoc_args['fast'] );
-		} elseif ( ! empty( $assoc_args['selector'] ) ) {
-			$response = \Lifx\Power\power( $power, $assoc_args['selector'] );
+		if ( ! empty( $assoc_args['fast'] ) ) {
+			$fast = $assoc_args['fast'];
 		} else {
-			$response = \Lifx\Power\power( $power );
+			$fast = false;
+		}
+		if ( ! empty( $assoc_args['selector'] ) ) {
+			$response = \Lifx\Power\power( $power, $fast, $assoc_args['selector'] );
+		} else {
+			$response = \Lifx\Power\power( $power, $fast );
 		}
 
 		// We don't get results when we set fast to true so we need to check the http response code.
