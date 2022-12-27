@@ -1,0 +1,23 @@
+{
+    "name": "bronsonquick/lifx",
+    "description": "Adds the ability to control your LIFX lights from WordPress.",
+    "type": "wordpress-plugin",
+    "license": "GPLv2 or later",
+    "authors": [
+        {
+            "name": "Bronson Quick",
+            "email": "bronson@bronsonquick.com.au",
+            "homepage": "https://bronsonquick.com.au",
+            "role": "Software Engineer"
+        }
+    ],
+    "keywords": ["wordpress", "plugin", "lifx"],
+    "homepage": "https://github.com/BronsonQuick/Lifx",
+    "support": {
+        "issues": "https://github.com/BronsonQuick/Lifx/issues",
+        "source": "https://github.com/BronsonQuick/Lifx"
+    },
+    "require": {
+        "php": ">5.6.*"
+    }
+}
