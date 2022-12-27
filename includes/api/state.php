@@ -298,3 +298,25 @@ function validate_colour( $colour ) {
 
 	return $request;
 }
+
+/**
+ * @param float   $brightness The brightness level from 0.0 to 1.0. Overrides any brightness set in color (if any).
+ * @param boolean $fast       (Optional) Whether the lights should return a payload or just a status code. Defaults to `false`.
+ * @param string  $selector   (Optional) Selector used to filter lights. Defaults to `all`.
+ *
+ * @return array[]|mixed|\WP_Error
+ */
+function brightness( $brightness, $fast = false, $selector = 'all' ) {
+	// Set the brightness
+	$payload = [
+		'body' => [
+			'power'      => 'on',
+			'fast'       => (bool) $fast,
+			'brightness' => (float) $brightness,
+		]
+	];
+
+	$request = state( $payload, $selector );
+
+	return $request;
+}
