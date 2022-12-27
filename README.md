@@ -28,3 +28,5 @@ You can type `wp help lifx` to see all the commands. Here are some common ones:
 * `wp lifx colour rebeccapurple --selector=label:"I Love Lamp" --fast=true` - Set the "I Love Lamp" to `#663399`
 * `wp lifx colour random` - Set's all lights to a random colour.
 * `wp lifx colour random --selector=label:"I Love Lamp"` - Set the "I Love Lamp" to a random colour.
+* `wp lifx breathe rebeccapurple` - Use the breath effect with the colour `rebeccapurple`.
+* `wp lifx breathe rebeccapurple --from_colour=deeppink --selector=group:Bedroom` - Use the breath effect with the colour `rebeccapurple`.

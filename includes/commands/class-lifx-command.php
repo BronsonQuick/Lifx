@@ -1,5 +1,6 @@
 <?php
 use Lifx\Auth;
+use function Lifx\Effects\breathe;
 use function Lifx\List_Lights\list_lights;
 use function Lifx\Power\power;
 use function Lifx\Power\toggle_lights;
@@ -322,6 +323,7 @@ class Lifx_Command {
 		} else {
 			WP_CLI::error( 'Please pass in a brightness value from between 0.0 to 1.0' );
 		}
+
 		if ( ! empty( $assoc_args['fast'] ) ) {
 			$fast = $assoc_args['fast'];
 		} else {
@@ -356,6 +358,111 @@ class Lifx_Command {
 				$status = "$selector is";
 			}
 			WP_CLI::success( "$status now at $brightness brightness." );
+		}
+	}
+
+	/**
+	 * Sets the colour for all lights or a specific light.
+	 * https://api.developer.lifx.com/docs/colors
+	 *
+	 * ## OPTIONS
+	 *
+	 * <colour>
+	 * : The colour to set the light to.
+	 *
+	 * [--from_colour=<string>]
+	 * : The colour to start the effect from.
+	 *
+	 * [--selector=<type>]
+	 * : The selector you wish to use. i.e. label, id, group_id, location, location_id
+	 *
+	 * [--from_colour=<string>]
+	 * : The colour to start the effect from.
+	 *
+	 * [--period=<seconds>]
+	 * : The time in seconds for one cycle of the effect.
+	 *
+	 * [--cycles=<number>]
+	 * : The time in seconds for one cycle of the effect.
+	 *
+	 * [--persist=<boolean>]
+	 * : If false set the light back to its previous value of 'from_color' when effect ends.
+	 *
+	 * [--power_on=<boolean>]
+	 * : If true, turn the bulb on if it is not already on.
+	 *
+	 * [--peak=<float>]
+	 * : Defines where in a period the target color is at its maximum. Minimum 0.0, maximum 1.0.
+	 *
+	 * ## EXAMPLES
+	 *
+	 * wp lifx breathe rebeccapurple
+	 *
+	 * @when after_wp_load
+	 */
+	public function breathe( $args, $assoc_args ) {
+		if ( ! empty( $args ) ) {
+			list( $colour ) = $args;
+			$colour = strtolower( $colour );
+		} else {
+			WP_CLI::error( 'Please pass in a colour string, hex value, or string.' );
+		}
+
+		if ( ! empty( $assoc_args['selector'] ) ) {
+			$selector = $assoc_args['selector'];
+		} else {
+			$selector = 'all';
+		}
+
+		if ( ! empty( $assoc_args['from_colour'] ) ) {
+			$from_colour = $assoc_args['from_colour'];
+		} else {
+			$from_colour = null;
+		}
+
+		if ( ! empty( $assoc_args['period'] ) ) {
+			$period = $assoc_args['period'];
+		} else {
+			$period = 1;
+		}
+
+		if ( ! empty( $assoc_args['cycles'] ) ) {
+			$cycles = $assoc_args['cycles'];
+		} else {
+			$cycles = 1;
+		}
+
+		if ( ! empty( $assoc_args['persist'] ) ) {
+			$persist = $assoc_args['persist'];
+		} else {
+			$persist = false;
+		}
+
+		if ( ! empty( $assoc_args['power_on'] ) ) {
+			$power_on = $assoc_args['power_on'];
+		} else {
+			$power_on = true;
+		}
+
+		if ( ! empty( $assoc_args['peak'] ) ) {
+			$peak = $assoc_args['peak'];
+		} else {
+			$peak = 0.5;
+		}
+
+		$response = breathe( $colour, $from_colour, $selector, $period, $cycles, $persist, $power_on, $peak );
+
+		// The response should be a 207 Multi-Status.
+		if ( 207 !== wp_remote_retrieve_response_code( $response ) ) {
+			return WP_CLI::error( $response->get_error_message() );
+		}
+
+		// The response will be a 207.
+		if ( 207 === wp_remote_retrieve_response_code( $response ) ) {
+			$payload = json_decode( wp_remote_retrieve_body( $response ), true );
+			foreach ( $payload['results'] as $light ) {
+				WP_CLI::success( "{$light['label']} has completed the breathe effect." );
+			}
 		}
 	}
 
