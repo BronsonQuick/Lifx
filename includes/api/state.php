@@ -256,7 +256,6 @@ function colour( $colour, $fast = false, $selector = 'all' ) {
 	}
 
 	// Set the colour
-
 	$payload = [
 		'body' => [
 			'power' => 'on',
