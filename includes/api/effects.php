@@ -2,6 +2,7 @@
 namespace Lifx\Effects;
 
 use function Lifx\Auth\get_headers;
+use function Lifx\State\validate_web_colours;
 
 /**
  * Performs a breathe effect by slowly fading between the given colors. Use the parameters to tweak the effect.
@@ -18,19 +19,22 @@ use function Lifx\Auth\get_headers;
  * @return array[]|mixed|\WP_Error
  */
 function breathe( $colour, $from_colour = null, $selector = 'all', $period = 1, $cycles = 1, $persist = false, $power_on = true, $peak = 0.5 ) {
-		$headers = get_headers();
+	$headers = get_headers();
 
 	if ( is_wp_error( $headers ) ) {
 		return $headers;
 	}
+
+	$colour_string      = validate_web_colours( $colour );
+	$from_colour_string = validate_web_colours( $from_colour );
 
 	$endpoint = LIFX_ENDPOINT . "/lights/$selector/effects/breathe";
 
 	$defaults = [
 		'method' => 'POST',
 		'body'   => [
-			'color'      => $colour,
-			'from_color' => $from_colour,
+			'color'      => $colour_string,
+			'from_color' => $from_colour_string,
 			'selector'   => $selector,
 			'period'     => (int) $period,
 			'cycles'     => (int) $cycles,
