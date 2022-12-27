@@ -230,7 +230,7 @@ function get_colours() {
  *
  * @return array|array[]|mixed|\WP_Error
  */
-function colour( $colour, $fast, $selector = 'all' ) {
+function colour( $colour, $fast = false, $selector = 'all' ) {
 	// Change the colour to lower case. e.g. HotPink becomes 'hotpink'.
 	$colour = strtolower( $colour );
 
