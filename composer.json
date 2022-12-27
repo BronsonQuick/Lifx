@@ -2,7 +2,7 @@
     "name": "bronsonquick/lifx",
     "description": "Adds the ability to control your LIFX lights from WordPress.",
     "type": "wordpress-plugin",
-    "license": "GPL-2.0+",
+    "license": "GPL-2.0-or-later",
     "authors": [
         {
             "name": "Bronson Quick",
