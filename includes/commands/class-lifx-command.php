@@ -210,13 +210,13 @@ class Lifx_Command {
 	}
 
 	/**
-	 * Sets the power for all lights or a specific light.
+	 * Sets the colour for all lights or a specific light.
 	 * https://api.developer.lifx.com/docs/colors
 	 *
 	 * ## OPTIONS
 	 *
 	 * <colour>
-	 * : The state of the light. i.e. on or off
+	 * : The colour to set the lights.
 	 *
 	 * [--selector=<type>]
 	 * : The selector you wish to use. i.e. label, id, group_id, location, location_id
@@ -229,6 +229,7 @@ class Lifx_Command {
 	 * wp lifx colour rebeccapurple
 	 * wp lifx colour rebeccapurple --fast=true
 	 * wp lifx colour rebeccapurple --selector=label:"I Love Lamp" --fast=true
+	 * wp lifx colour random
 	 * wp lifx colour "#663399"
 	 * wp lifx colour "hue:120 saturation:1.0 brightness:0.5"
 	 * wp lifx colour "kelvin:2700 brightness: 0.5"
@@ -245,6 +246,12 @@ class Lifx_Command {
 			$colour = strtolower( $colour );
 		} else {
 			WP_CLI::error( 'Please pass in a colour string, hex value, or string.' );
+		}
+
+		// If the colour is "random" then let's randomly choose a colour from our built-in colours.
+		if ( 'random' === $colour ) {
+			$colours = get_colours();
+			$colour = array_rand( $colours );
 		}
 
 		if ( ! empty( $assoc_args['fast'] ) ) {
