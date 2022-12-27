@@ -1,10 +1,18 @@
 <?php
 namespace Lifx\Power;
 
+use function \Lifx\Auth\get_headers;
 use function Lifx\State\state;
 
+/**
+ * A function to toggle the state of the LIFX lights.
+ *
+ * @param string $selector (Optional) Selector used to filter lights. Defaults to `all`.
+ *
+ * @return array[]|mixed|\WP_Error
+ */
 function toggle_lights( $selector = 'all' ) {
-	$headers = \Lifx\Auth\get_headers();
+	$headers = get_headers();
 
 	if ( is_wp_error( $headers ) ) {
 		return $headers;
@@ -22,6 +30,15 @@ function toggle_lights( $selector = 'all' ) {
 	return $response;
 }
 
+/**
+ * A function to turn on or off all lights or a specific light.
+ *
+ * @param string  $state    (Optional) The state of the power. Defaults to `on`.
+ * @param boolean $fast     (Optional) Whether the lights should return a payload or just a status code. Defaults to `false`.
+ * @param string  $selector (Optional) Selector used to filter lights. Defaults to `all`.
+ *
+ * @return array[]|mixed|\WP_Error
+ */
 function power( $state = 'on', $fast = false, $selector = 'all' ) {
 	$payload = [
 		'body' => [

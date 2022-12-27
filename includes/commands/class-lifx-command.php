@@ -3,9 +3,10 @@ use Lifx\Auth;
 use function Lifx\List_Lights\list_lights;
 use function Lifx\Power\power;
 use function Lifx\Power\toggle_lights;
+use function Lifx\State\brightness;
+use function Lifx\State\colour;
 use function Lifx\State\get_colours;
 use function Lifx\State\validate_colour;
-use function Lifx\State\colour;
 
 class Lifx_Command {
 	/**
@@ -288,6 +289,73 @@ class Lifx_Command {
 				$status = "$selector is";
 			}
 			WP_CLI::success( "$status now set to $colour." );
+		}
+	}
+
+	/**
+	 * Sets the brightness for all lights or a specific light.
+	 * https://api.developer.lifx.com/reference/set-state
+	 *
+	 * ## OPTIONS
+	 *
+	 * <brightness>
+	 * : The brightness level from 0.0 to 1.0. Overrides any brightness set in color (if any).
+	 *
+	 * [--selector=<type>]
+	 * : The selector you wish to use. i.e. label, id, group_id, location, location_id
+	 *
+	 * [--fast=<bool>]
+	 * : Whether or not to return a response from the LIFX API.
+	 *
+	 * ## EXAMPLES
+	 *
+	 * wp lifx brightness 0.5
+	 * wp lifx brightness 1.0 --fast=true
+	 * wp lifx brightness 0.75 --selector=group:Bedroom
+	 * wp lifx brightness 0.75 --selector=label:'I Love Lamp'
+	 *
+	 * @when after_wp_load
+	 */
+	public function brightness( $args, $assoc_args ) {
+		if ( ! empty( $args ) ) {
+			list( $brightness ) = $args;
+		} else {
+			WP_CLI::error( 'Please pass in a brightness value from between 0.0 to 1.0' );
+		}
+		if ( ! empty( $assoc_args['fast'] ) ) {
+			$fast = $assoc_args['fast'];
+		} else {
+			$fast = false;
+		}
+
+		if ( ! empty( $assoc_args['selector'] ) ) {
+			$selector = $assoc_args['selector'];
+		} else {
+			$selector = 'all';
+		}
+
+		$response = brightness( (float) $brightness, $fast, $selector );
+
+		if ( 207 !== wp_remote_retrieve_response_code( $response ) && 202 !== wp_remote_retrieve_response_code( $response ) ) {
+			return WP_CLI::error( $response->get_error_message() );
+		}
+
+		// The response will be a 207 if we haven't passed through the fast option.
+		if ( 207 === wp_remote_retrieve_response_code( $response ) ) {
+			$payload = json_decode( wp_remote_retrieve_body( $response ), true );
+			foreach ( $payload['results'] as $light ) {
+				WP_CLI::success( "{$light['label']} is now set at $brightness brightness." );
+			}
+		}
+
+		// We've passed in fast so we don't get a response payload from the API.
+		if ( 202 === wp_remote_retrieve_response_code( $response ) ) {
+			if ( 'all' === $selector ) {
+				$status = 'All lights are';
+			} else {
+				$status = "$selector is";
+			}
+			WP_CLI::success( "$status now at $brightness brightness." );
 		}
 	}
 

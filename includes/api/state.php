@@ -1,7 +1,6 @@
 <?php
-
 namespace Lifx\State;
-
+use function \Lifx\Auth\get_headers;
 /**
  * A function that we can use to set the state of the lamp.
  * https://api.developer.lifx.com/reference/set-state
@@ -12,7 +11,7 @@ namespace Lifx\State;
  * @return array[]|mixed|\WP_Error
  */
 function state( $payload, $selector = 'all' ) {
-	$headers = \Lifx\Auth\get_headers();
+	$headers = get_headers();
 
 	if ( is_wp_error( $headers ) ) {
 		return $headers;
@@ -40,14 +39,18 @@ function state( $payload, $selector = 'all' ) {
 	return $request;
 }
 
+/**
+ * A function to get the colours we've setup for our lights.
+ *
+ * We are using the web browser HTML colours: https://www.quackit.com/html/codes/color/html_color_chart.cfm
+ *
+ * LIFX's API supports the following strings: 'white, red, orange, yellow, cyan, green, blue, purple, or pink'
+ * However their version of 'Pink' is closer to a 'DeepPink' so let's stick to the names web browsers
+ * and developers are used to.
+ *
+ * @return array
+ */
 function get_colours() {
-	/**
-	 * Let's use HTML colours: https://www.quackit.com/html/codes/color/html_color_chart.cfm
-	 *
-	 * LIFX's API supports the following strings: "white, red, orange, yellow, cyan, green, blue, purple, or pink"
-	 * However their version of "Pink" is closer to a "DeepPink" so let's stick to the names web browsers
-	 * and developers are used to.
-	 */
 	$colours = [
 		// Reds.
 		'indianred'            => '#CD5C5C',
@@ -209,13 +212,25 @@ function get_colours() {
 		'black'                => '#000000',
 	];
 
-	// Allow filtering for custom colours.
+	/**
+	 * A filter to allow custom colours.
+	 *
+	 * @param array $colours The array of supported colours.
+	 */
 	$colours = apply_filters( 'lifx_colours', $colours );
 
-	return $colours;
+	return (array) $colours;
 }
 
-function colour( $colour, $fast, $selector = 'all' ) {
+/**
+ * @param string $colour The colour to set the light to. This takes a few formats. i.e. rebeccapurple, random, "#336699", "hue:120 saturation:1.0 brightness:0.5"
+ * Full docs are here: https://api.developer.lifx.com/docs/colors
+ * @param boolean $fast    (Optional) Whether the lights should return a payload or just a status code. Defaults to `false`.
+ * @param string $selector (Optional) Selector used to filter lights. Defaults to `all`.
+ *
+ * @return array|array[]|mixed|\WP_Error
+ */
+function colour( $colour, $fast = false, $selector = 'all' ) {
 	// Change the colour to lower case. e.g. HotPink becomes 'hotpink'.
 	$colour = strtolower( $colour );
 
@@ -241,7 +256,6 @@ function colour( $colour, $fast, $selector = 'all' ) {
 	}
 
 	// Set the colour
-
 	$payload = [
 		'body' => [
 			'power' => 'on',
@@ -256,7 +270,7 @@ function colour( $colour, $fast, $selector = 'all' ) {
 }
 
 function validate_colour( $colour ) {
-	$headers = \Lifx\Auth\get_headers();
+	$headers = get_headers();
 
 	if ( is_wp_error( $headers ) ) {
 		return $headers;
@@ -281,6 +295,28 @@ function validate_colour( $colour ) {
 	if ( 200 !== wp_remote_retrieve_response_code( $request ) ) {
 		return new \WP_Error( '422', "$colour is not a valid LIFX colour." );
 	}
+
+	return $request;
+}
+
+/**
+ * @param float   $brightness The brightness level from 0.0 to 1.0. Overrides any brightness set in color (if any).
+ * @param boolean $fast       (Optional) Whether the lights should return a payload or just a status code. Defaults to `false`.
+ * @param string  $selector   (Optional) Selector used to filter lights. Defaults to `all`.
+ *
+ * @return array[]|mixed|\WP_Error
+ */
+function brightness( $brightness, $fast = false, $selector = 'all' ) {
+	// Set the brightness
+	$payload = [
+		'body' => [
+			'power'      => 'on',
+			'fast'       => (bool) $fast,
+			'brightness' => (float) $brightness,
+		]
+	];
+
+	$request = state( $payload, $selector );
 
 	return $request;
 }
