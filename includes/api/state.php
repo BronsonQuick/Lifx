@@ -231,29 +231,8 @@ function get_colours() {
  * @return array|array[]|mixed|\WP_Error
  */
 function colour( $colour, $fast = false, $selector = 'all' ) {
-	// Change the colour to lower case. e.g. HotPink becomes 'hotpink'.
-	$colour = strtolower( $colour );
 
-	$colours = get_colours();
-
-	$colour_string = '';
-
-	// If the colour is in our list of colours then set the colour to the Hex value.
-	if ( true === array_key_exists( $colour, $colours ) ) {
-		$colour_string = $colours[$colour];
-	}
-
-	/**
-	 * If the colour name or hex values doesn't exist then we should validate it via the LIFX API.
-	 * https://api.developer.lifx.com/reference/validate-color
-	 */
-	if ( empty( $colour_string ) && false === in_array( $colour, $colours, true ) ) {
-		$validation = validate_colour( $colour );
-			if ( is_wp_error( $validation ) ) {
-			return $validation;
-		}
-		$colour_string = $colour;
-	}
+	$colour_string = validate_web_colours( $colour );
 
 	// Set the colour
 	$payload = [
@@ -269,6 +248,14 @@ function colour( $colour, $fast = false, $selector = 'all' ) {
 	return $request;
 }
 
+/**
+ * A function to validate strings and colours passed into our functions with the LIFX API.
+ * https://api.developer.lifx.com/reference/validate-color
+ *
+ * @param string $colour
+ *
+ * @return array|array[]|\WP_Error
+ */
 function validate_colour( $colour ) {
 	$headers = get_headers();
 
@@ -300,6 +287,8 @@ function validate_colour( $colour ) {
 }
 
 /**
+ * A function to change the brightness of all lights or specific lights.
+ *
  * @param float   $brightness The brightness level from 0.0 to 1.0. Overrides any brightness set in color (if any).
  * @param boolean $fast       (Optional) Whether the lights should return a payload or just a status code. Defaults to `false`.
  * @param string  $selector   (Optional) Selector used to filter lights. Defaults to `all`.
@@ -319,4 +308,40 @@ function brightness( $brightness, $fast = false, $selector = 'all' ) {
 	$request = state( $payload, $selector );
 
 	return $request;
+}
+
+/**
+ * A function to see if the colour string is registered in our plugin.
+ * If not, validate it with the LIFX API. https://api.developer.lifx.com/reference/validate-color
+ *
+ * @param $colour
+ *
+ * @return array|array[]|mixed|string|\WP_Error
+ */
+function validate_web_colours( $colour ) {
+	// Change the colour to lower case. e.g. HotPink becomes 'hotpink'.
+	$colour = strtolower( $colour );
+
+	$colours = get_colours();
+
+	$colour_string = '';
+
+	// If the colour is in our list of colours then set the colour to the Hex value.
+	if ( true === array_key_exists( $colour, $colours ) ) {
+		$colour_string = $colours[$colour];
+	}
+
+	/**
+	 * If the colour name or hex values doesn't exist then we should validate it via the LIFX API.
+	 * https://api.developer.lifx.com/reference/validate-color
+	 */
+	if ( empty( $colour_string ) && false === in_array( $colour, $colours, true ) ) {
+		$validation = validate_colour( $colour );
+			if ( is_wp_error( $validation ) ) {
+			return $validation;
+		}
+		$colour_string = $colour;
+	}
+
+	return $colour_string;
 }
