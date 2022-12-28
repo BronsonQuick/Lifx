@@ -60,6 +60,9 @@ class Lifx_Command {
 		} else {
 			$selector = 'all';
 		}
+		/**
+		 * @param string $selector (Optional) Selector used to filter lights. Defaults to `all`.
+		 */
 		$response = toggle_lights( $selector );
 		if ( ! empty( $response ) ) {
 			foreach ( $response['results'] as $light ) {
@@ -92,6 +95,10 @@ class Lifx_Command {
 		} else {
 			$selector = 'all';
 		}
+
+		/**
+		 * @param string  $selector (Optional) Selector used to filter lights. Defaults to `all`.
+		 */
 		$response = list_lights( $selector );
 		WP_CLI\Utils\format_items( 'table', $response, [ 'id', 'label', 'power', 'brightness', 'connected' ] );
 	}
@@ -130,6 +137,14 @@ class Lifx_Command {
 			$fast = false;
 		}
 		if ( ! empty( $assoc_args['selector'] ) ) {
+			/**
+			 *
+			 * @param string  $state    (Optional) The state of the power. Defaults to `on`.
+			 * @param boolean $fast     (Optional) Whether the lights should return a payload or just a status code. Defaults to `false`.
+			 * @param string  $selector (Optional) Selector used to filter lights. Defaults to `all`.
+			 *
+			 * @return array[]|mixed|\WP_Error
+			 */
 			$response = power( $power, $fast, $assoc_args['selector'] );
 		} else {
 			$response = power( $power, $fast );
@@ -272,6 +287,12 @@ class Lifx_Command {
 			$selector = 'all';
 		}
 
+		/**
+		 * @param string $colour The colour to set the light to. This takes a few formats. i.e. rebeccapurple, random, "#336699", "hue:120 saturation:1.0 brightness:0.5"
+		 * Full docs are here: https://api.developer.lifx.com/docs/colors
+		 * @param boolean $fast    (Optional) Whether the lights should return a payload or just a status code. Defaults to `false`.
+		 * @param string $selector (Optional) Selector used to filter lights. Defaults to `all`.
+		 */
 		$response = colour( $colour, $fast, $selector );
 
 		if ( 207 !== wp_remote_retrieve_response_code( $response ) && 202 !== wp_remote_retrieve_response_code( $response ) ) {
@@ -340,6 +361,11 @@ class Lifx_Command {
 			$selector = 'all';
 		}
 
+		/**
+		 * @param float   $brightness The brightness level from 0.0 to 1.0. Overrides any brightness set in color (if any).
+		 * @param boolean $fast       (Optional) Whether the lights should return a payload or just a status code. Defaults to `false`.
+		 * @param string  $selector   (Optional) Selector used to filter lights. Defaults to `all`.
+		 */
 		$response = brightness( (float) $brightness, $fast, $selector );
 
 		if ( 207 !== wp_remote_retrieve_response_code( $response ) && 202 !== wp_remote_retrieve_response_code( $response ) ) {
