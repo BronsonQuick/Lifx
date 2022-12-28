@@ -129,7 +129,7 @@ class Lifx_Command {
 			$fast = false;
 		}
 		if ( ! empty( $assoc_args['selector'] ) ) {
-			$response = power( $power, $assoc_args['selector'], $fast );
+			$response = power( $power, $fast, $assoc_args['selector'] );
 		} else {
 			$response = power( $power, $fast );
 		}
@@ -400,6 +400,11 @@ class Lifx_Command {
 	 * ## EXAMPLES
 	 *
 	 * wp lifx breathe rebeccapurple
+	 * wp lifx breathe deeppink --from_colour=darkblue --cycles=3
+	 * wp lifx breathe deeppink --from_colour=darkblue --cycles=3 --period=5
+	 * wp lifx breathe deeppink --from_colour=rebeccapurple --cycles=3 --period=5 --power_on=false
+	 * wp lifx breathe deeppink --from_colour=rebeccapurple --cycles=3 --period=5 --power_on=false --persist=true
+	 * wp lifx breathe deeppink --from_colour=rebeccapurple --cycles=3 --period=5 --power_on=false --persist=true --peak=1
 	 *
 	 * @when after_wp_load
 	 */
@@ -453,6 +458,17 @@ class Lifx_Command {
 			$peak = 0.5;
 		}
 
+		/**
+		 * @param string  $colour      The colour to set the light to. This takes a few formats. i.e. rebeccapurple, random, '#336699', 'hue:120 saturation:1.0 brightness:0.5'
+		 * @param string  $from_colour (Optional) The colour to start the effect from. This takes a few formats. i.e. rebeccapurple, random, '#336699', 'hue:120 saturation:1.0 brightness:0.5'
+		 * @param string  $selector    (Optional) Selector used to filter lights. Defaults to `all`.
+		 * @param int     $period      (Optional) The time in seconds for one cycle of the effect.
+		 * @param int     $cycles      (Optional) The number of times to repeat the effect.
+		 * @param boolean $persist     (Optional) If false set the light back to its previous value of 'from_color' when effect ends, if true leave the last effect color.
+		 * @param boolean $power_on    (Optional) If true, turn the bulb on if it is not already on.
+		 * @param float   $peak        (Optional) Defines where in a period the target color is at its maximum. Minimum 0.0, maximum 1.0.
+		 *
+		 */
 		$response = breathe( $colour, $from_colour, $selector, $period, $cycles, $persist, $power_on, $peak );
 
 		// The response should be a 207 Multi-Status.
@@ -464,7 +480,7 @@ class Lifx_Command {
 		if ( 207 === wp_remote_retrieve_response_code( $response ) ) {
 			$payload = json_decode( wp_remote_retrieve_body( $response ), true );
 			foreach ( $payload['results'] as $light ) {
-				WP_CLI::success( "{$light['label']} has completed the breathe effect." );
+				WP_CLI::success( "{$light['label']} is completing the breathe effect." );
 			}
 		}
 	}
