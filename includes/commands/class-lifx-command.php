@@ -140,17 +140,20 @@ class Lifx_Command {
 
 		// We don't get results when we set fast to true so we need to check the http response code.
 		if ( ! empty( $assoc_args['fast'] ) ) {
-			if ( 202 !== wp_remote_retrieve_response_code( $response ) ) {
+			if ( 202 === wp_remote_retrieve_response_code( $response ) ) {
 				if ( empty( $light ) ) {
 					$status = 'All lights are';
 				} else {
 					$status = "$light is";
 				}
 				WP_CLI::success( "$status now $power." );
+			} else {
+				WP_CLI::error( 'Something went wrong' );
 			}
 		} else {
-			if ( ! empty( $response ) ) {
-				foreach ( $response['results'] as $light ) {
+			$payload = json_decode( wp_remote_retrieve_body( $response ), true );
+			if ( ! empty( $payload ) ) {
+				foreach ( $payload['results'] as $light ) {
 					WP_CLI::success( "{$light['label']} is now $power." );
 				}
 			} else {
