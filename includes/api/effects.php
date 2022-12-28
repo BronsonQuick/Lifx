@@ -30,6 +30,9 @@ function breathe( $colour, $from_colour = null, $selector = 'all', $period = 1, 
 
 	$endpoint = LIFX_ENDPOINT . "/lights/$selector/effects/breathe";
 
+	$persist  = filter_var( $persist, FILTER_VALIDATE_BOOLEAN );
+	$power_on = filter_var( $power_on, FILTER_VALIDATE_BOOLEAN );
+
 	$defaults = [
 		'method'  => 'POST',
 		'timeout' => 10,
@@ -38,7 +41,7 @@ function breathe( $colour, $from_colour = null, $selector = 'all', $period = 1, 
 			'from_color' => $from_colour_string,
 			'period'     => (int) $period,
 			'cycles'     => (int) $cycles,
-			'persist'    => (bool) $persist,
+			'persist'    => $persist,
 			'power_on'   => $power_on,
 			'peak'       => (float) $peak,
 		],
@@ -81,6 +84,9 @@ function pulse( $colour, $from_colour = null, $selector = 'all', $period = 1, $c
 
 	$endpoint = LIFX_ENDPOINT . "/lights/$selector/effects/pulse";
 
+	$persist  = filter_var( $persist, FILTER_VALIDATE_BOOLEAN );
+	$power_on = filter_var( $power_on, FILTER_VALIDATE_BOOLEAN );
+
 	$defaults = [
 		'method'  => 'POST',
 		'timeout' => 10,
@@ -89,12 +95,63 @@ function pulse( $colour, $from_colour = null, $selector = 'all', $period = 1, $c
 			'from_color' => $from_colour_string,
 			'period'     => (int) $period,
 			'cycles'     => (int) $cycles,
-			'persist'    => (bool) $persist,
+			'persist'    => $persist,
 			'power_on'   => $power_on
 		],
 	];
 
 	$payload = array_merge( $defaults, $headers );
+
+	$payload['body'] = wp_json_encode( $payload['body'] );
+
+	$request = wp_safe_remote_post(
+		$endpoint,
+		$payload
+	);
+
+	return $request;
+}
+
+/**
+ * Performs a move effect on a linear device with zones, by moving the current pattern across the device. Use the parameters to tweak the effect.
+ *
+ * @param string  $direction   (Optional) Move direction, can be forward or backward.
+ * @param string  $selector    (Optional) Selector used to filter lights. Defaults to `all`.
+ * @param boolean $fast        (Optional) Whether the lights should return a payload or just a status code. Defaults to `false`.
+ * @param int     $period      (Optional) The time in seconds for one cycle of the effect.
+ * @param int     $cycles      (Optional) The number of times to repeat the effect.
+ * @param boolean $power_on    (Optional) If true, turn the bulb on if it is not already on.
+ *
+ * @return array[]|mixed|\WP_Error
+ */
+function move( $direction = 'forward', $selector = 'all', $fast = false, $period = 1, $cycles = 1, $power_on = true ) {
+	$headers = get_headers();
+
+	if ( is_wp_error( $headers ) ) {
+		return $headers;
+	}
+
+	$endpoint = LIFX_ENDPOINT . "/lights/$selector/effects/move";
+
+	$power_on = filter_var( $power_on, FILTER_VALIDATE_BOOLEAN );
+
+	$defaults = [
+		'method'  => 'POST',
+		'timeout' => 10,
+		'body'    => [
+			'direction'  => $direction,
+			'fast'       => $fast,
+			'period'     => (int) $period,
+			'cycles'     => (int) $cycles,
+			'power_on'   => $power_on
+		],
+	];
+
+	$payload = array_merge( $defaults, $headers );
+
+	// Filter our booleans.
+	$payload['body']['fast'] = filter_var( $payload['body']['fast'], FILTER_VALIDATE_BOOLEAN );
+	$payload['body']['power_on'] = filter_var( $payload['body']['power_on'], FILTER_VALIDATE_BOOLEAN );
 
 	$payload['body'] = wp_json_encode( $payload['body'] );
 
@@ -122,6 +179,8 @@ function effects( $selector = 'all', $power_off = false ) {
 	}
 
 	$endpoint = LIFX_ENDPOINT . "/lights/$selector/effects/off";
+
+	$power_off = filter_var( $power_off, FILTER_VALIDATE_BOOLEAN );
 
 	$defaults = [
 		'method'  => 'POST',
