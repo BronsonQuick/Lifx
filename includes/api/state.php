@@ -20,8 +20,9 @@ function state( $payload, $selector = 'all' ) {
 	$endpoint = LIFX_ENDPOINT . "/lights/$selector/state";
 
 	$defaults = [
-		'method' => 'PUT',
-		'body'   => [
+		'method'  => 'PUT',
+		'timeout' => 10,
+		'body'    => [
 			'power' => 'on',
 			'fast'  => (bool) true,
 		],
@@ -266,8 +267,9 @@ function validate_colour( $colour ) {
 	$endpoint = LIFX_ENDPOINT . "/color";
 
 	$defaults = [
-		'method' => 'GET',
-		'body'   => [
+		'method'  => 'GET',
+		'timeout' => 10,
+		'body'    => [
 			'string' => $colour,
 		],
 	];

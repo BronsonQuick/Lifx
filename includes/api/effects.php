@@ -31,8 +31,9 @@ function breathe( $colour, $from_colour = null, $selector = 'all', $period = 1, 
 	$endpoint = LIFX_ENDPOINT . "/lights/$selector/effects/breathe";
 
 	$defaults = [
-		'method' => 'POST',
-		'body'   => [
+		'method'  => 'POST',
+		'timeout' => 10,
+		'body'    => [
 			'color'      => $colour_string,
 			'from_color' => $from_colour_string,
 			'period'     => (int) $period,
@@ -81,8 +82,9 @@ function pulse( $colour, $from_colour = null, $selector = 'all', $period = 1, $c
 	$endpoint = LIFX_ENDPOINT . "/lights/$selector/effects/pulse";
 
 	$defaults = [
-		'method' => 'POST',
-		'body'   => [
+		'method'  => 'POST',
+		'timeout' => 10,
+		'body'    => [
 			'color'      => $colour_string,
 			'from_color' => $from_colour_string,
 			'period'     => (int) $period,
@@ -122,8 +124,9 @@ function effects( $selector = 'all', $power_off = false ) {
 	$endpoint = LIFX_ENDPOINT . "/lights/$selector/effects/off";
 
 	$defaults = [
-		'method' => 'POST',
-		'body'   => [
+		'method'  => 'POST',
+		'timeout' => 10,
+		'body'    => [
 			'power_off' => $power_off,
 		],
 	];
