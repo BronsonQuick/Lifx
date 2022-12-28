@@ -39,7 +39,7 @@ function toggle_lights( $selector = 'all' ) {
  *
  * @return array[]|mixed|\WP_Error
  */
-function power( $state = 'on', $fast = false, $selector = 'all' ) {
+function power( $state = 'on', $selector = 'all', $fast = false ) {
 	$payload = [
 		'body' => [
 			'power' => $state,
