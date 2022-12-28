@@ -149,6 +149,10 @@ function move( $direction = 'forward', $selector = 'all', $fast = false, $period
 
 	$payload = array_merge( $defaults, $headers );
 
+	// Filter our booleans.
+	$payload['body']['fast'] = filter_var( $payload['body']['fast'], FILTER_VALIDATE_BOOLEAN );
+	$payload['body']['power_on'] = filter_var( $payload['body']['power_on'], FILTER_VALIDATE_BOOLEAN );
+
 	$payload['body'] = wp_json_encode( $payload['body'] );
 
 	$request = wp_safe_remote_post(

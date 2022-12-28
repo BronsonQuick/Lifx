@@ -133,10 +133,17 @@ class Lifx_Command {
 		if ( ! empty( $args ) ) {
 			list( $power ) = $args;
 		}
+
 		if ( ! empty( $assoc_args['fast'] ) ) {
 			$fast = $assoc_args['fast'];
 		} else {
 			$fast = false;
+		}
+
+		if ( ! empty( $assoc_args['selector'] ) ) {
+			$selector = $assoc_args['selector'];
+		} else {
+			$selector = 'all';
 		}
 		if ( ! empty( $assoc_args['selector'] ) ) {
 			/**
@@ -147,7 +154,7 @@ class Lifx_Command {
 			 *
 			 * @return array[]|mixed|\WP_Error
 			 */
-			$response = power( $power, $fast, $assoc_args['selector'] );
+			$response = power( $power, $fast, $selector );
 		} else {
 			$response = power( $power, $fast );
 		}
@@ -156,27 +163,26 @@ class Lifx_Command {
 			return WP_CLI::error( $response->get_error_message() );
 		}
 
-		// We don't get results when we set fast to true so we need to check the http response code.
-		if ( ! empty( $assoc_args['fast'] ) ) {
-			if ( 202 === wp_remote_retrieve_response_code( $response ) ) {
-				if ( empty( $light ) ) {
-					$status = 'All lights are';
-				} else {
-					$status = "$light is";
-				}
-				WP_CLI::success( "$status now $power." );
-			} else {
-				WP_CLI::error( 'Something went wrong' );
-			}
-		} else {
+		if ( 207 !== wp_remote_retrieve_response_code( $response ) && 202 !== wp_remote_retrieve_response_code( $response ) ) {
+			return WP_CLI::error( $response->get_error_message() );
+		}
+
+		// The response will be a 207 if we haven't passed through the fast option.
+		if ( 207 === wp_remote_retrieve_response_code( $response ) ) {
 			$payload = json_decode( wp_remote_retrieve_body( $response ), true );
-			if ( ! empty( $payload ) ) {
-				foreach ( $payload['results'] as $light ) {
-					WP_CLI::success( "{$light['label']} is now $power." );
-				}
-			} else {
-				WP_CLI::error( 'Something went wrong' );
+			foreach ( $payload['results'] as $light ) {
+				WP_CLI::success( "{$light['label']} is now set to $power." );
 			}
+		}
+
+		// We've passed in fast so we don't get a response payload from the API.
+		if ( 202 === wp_remote_retrieve_response_code( $response ) ) {
+			if ( 'all' === $selector ) {
+				$status = 'All lights are';
+			} else {
+				$status = "$selector is";
+			}
+			WP_CLI::success( "$status now set to $power." );
 		}
 	}
 

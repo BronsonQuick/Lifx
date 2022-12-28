@@ -30,3 +30,13 @@ You can type `wp help lifx` to see all the commands. Here are some common ones:
 * `wp lifx colour random --selector=label:"I Love Lamp"` - Set the "I Love Lamp" to a random colour.
 * `wp lifx breathe rebeccapurple` - Use the breath effect with the colour `rebeccapurple`.
 * `wp lifx breathe rebeccapurple --from_colour=deeppink --selector=group:Bedroom` - Use the breath effect with the colour `rebeccapurple`.
+* `wp lifx pulse rebeccapurple` - Use the pulse effect with the colour `rebeccapurple`. 
+* `wp lifx pulse deeppink --from_colour=darkblue --cycles=3` - Use the pulse effect with the colour `deeppink` and `darkblue` 3 times. 
+* `wp lifx pulse deeppink --from_colour=darkblue --cycles=3 --period=5` - Use the pulse effect with the colour `deeppink` and `darkblue` 3 times over 5 seconds.
+* `wp lifx pulse deeppink --from_colour=rebeccapurple --cycles=3 --period=5 --power_on=false` - Use the pulse effect with the colour `deeppink` and `rebeccapurple` 3 times over 5 seconds but only if the light is already on.
+* `wp lifx pulse deeppink --from_colour=rebeccapurple --cycles=3 --period=5 --power_on=false --persist=true` - Use the pulse effect with the colour `deeppink` and `rebeccapurple` 3 times over 5 seconds but only if the light is already on and leave the light on the starting colour.
+* `wp lifx move forward` - Perform a move effect on any lights that can do that effect.
+* `wp lifx move forward --cycles=3 --period=5` - Perform a move effect on any lights that can do that effect, three times over five seconds.
+* `wp lifx move backward --cycles=10 --period=10 --power_on=false` - Perform a move effect on any lights that can do that effect, ten times over 10 seconds but only if the light is already on.
+* `wp lifx move backward --selector=group:"Music Room"` - Perform a move effect on any lights that can do that effect in the group "Music Room".
+* `wp lifx move backward --selector=group:"Music Room" --fast=true` - Perform a move effect on any lights that can do that effect in the group "Music Room" but don't return a payload response so it's faster.

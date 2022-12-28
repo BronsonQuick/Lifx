@@ -24,11 +24,14 @@ function state( $payload, $selector = 'all' ) {
 		'timeout' => 10,
 		'body'    => [
 			'power' => 'on',
-			'fast'  => true,
+			'fast'  => false,
 		],
 	];
 
 	$payload = array_merge( $defaults, $payload, $headers );
+
+	// Make sure we change the type to a boolean.
+	$payload['body']['fast'] = filter_var( $payload['body']['fast'], FILTER_VALIDATE_BOOLEAN );
 
 	$payload['body'] = wp_json_encode( $payload['body'] );
 
