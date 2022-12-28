@@ -2,6 +2,7 @@
 use Lifx\Auth;
 use function Lifx\Effects\breathe;
 use function Lifx\Effects\effects;
+use function Lifx\Effects\move;
 use function Lifx\Effects\pulse;
 use function Lifx\List_Lights\list_lights;
 use function Lifx\Power\power;
@@ -544,7 +545,6 @@ class Lifx_Command {
 	 * wp lifx pulse deeppink --from_colour=darkblue --cycles=3 --period=5
 	 * wp lifx pulse deeppink --from_colour=rebeccapurple --cycles=3 --period=5 --power_on=false
 	 * wp lifx pulse deeppink --from_colour=rebeccapurple --cycles=3 --period=5 --power_on=false --persist=true
-	 * wp lifx pulse deeppink --from_colour=rebeccapurple --cycles=3 --period=5 --power_on=false --persist=true
 	 *
 	 * @when after_wp_load
 	 */
@@ -587,7 +587,7 @@ class Lifx_Command {
 		}
 
 		if ( ! empty( $assoc_args['power_on'] ) ) {
-			$power_on = false;
+			$power_on = $assoc_args['power_on'];
 		} else {
 			$power_on = true;
 		}
@@ -602,6 +602,7 @@ class Lifx_Command {
 		 * @param boolean $power_on    (Optional) If true, turn the bulb on if it is not already on.
 		 *
 		 */
+
 		$response = pulse( $colour, $from_colour, $selector, $period, $cycles, $persist, $power_on );
 
 		// The response should be a 207 Multi-Status.
@@ -615,6 +616,110 @@ class Lifx_Command {
 			foreach ( $payload['results'] as $light ) {
 				WP_CLI::success( "{$light['label']} is completing the pulse effect." );
 			}
+		}
+	}
+
+	/**
+	 * Performs a move effect by quickly flashing between the given colors. Use the parameters to tweak the effect.
+	 * https://api.developer.lifx.com/reference/move-effect
+	 *
+	 * ## OPTIONS
+	 *
+	 * <direction>
+	 * : Move direction, can be forward or backward.
+	 *
+	 * [--selector=<type>]
+	 * : The selector you wish to use. i.e. label, id, group_id, location, location_id
+	 *
+	 * [--fast=<bool>]
+	 * : Whether or not to return a response from the LIFX API.
+	 *
+	 * [--period=<seconds>]
+	 * : The time in seconds for one cycle of the effect.
+	 *
+	 * [--cycles=<number>]
+	 * : The time in seconds for one cycle of the effect.
+	 *
+	 * [--power_on=<boolean>]
+	 * : If true, turn the bulb on if it is not already on.
+	 *
+	 * ## EXAMPLES
+	 *
+	 * wp lifx move forward
+	 * wp lifx move backward --selector=group:"Music Room"
+	 * wp lifx move backward --selector=group:"Music Room" --fast=true
+	 * wp lifx move forward --cycles=3 --period=5
+	 * wp lifx move backward --cycles=10 --period=10 --power_on=true
+	 *
+	 * @when after_wp_load
+	 */
+	public function move( $args, $assoc_args ) {
+		if ( ! empty( $args ) ) {
+			list( $direction ) = $args;
+		} else {
+			WP_CLI::error( 'Please pass in a direction.' );
+		}
+
+		if ( ! empty( $assoc_args['selector'] ) ) {
+			$selector = $assoc_args['selector'];
+		} else {
+			$selector = 'all';
+		}
+
+		if ( ! empty( $assoc_args['fast'] ) ) {
+			$fast = true;
+		} else {
+			$fast = false;
+		}
+
+		if ( ! empty( $assoc_args['period'] ) ) {
+			$period = $assoc_args['period'];
+		} else {
+			$period = 1;
+		}
+
+		if ( ! empty( $assoc_args['cycles'] ) ) {
+			$cycles = $assoc_args['cycles'];
+		} else {
+			$cycles = 1;
+		}
+
+		if ( ! empty( $assoc_args['power_on'] ) ) {
+			$power_on = false;
+		} else {
+			$power_on = true;
+		}
+
+		/**
+		 * @param string  $direction   (Optional) Move direction, can be forward or backward.
+		 * @param string  $selector    (Optional) Selector used to filter lights. Defaults to `all`.
+		 * @param boolean $fast        (Optional) Whether the lights should return a payload or just a status code. Defaults to `false`.
+		 * @param int     $period      (Optional) The time in seconds for one cycle of the effect.
+		 * @param int     $cycles      (Optional) The number of times to repeat the effect.
+		 * @param boolean $power_on    (Optional) If true, turn the bulb on if it is not already on.
+		 */
+		$response = move( $direction, $selector, $fast, $period, $cycles, $power_on );
+
+		if ( 207 !== wp_remote_retrieve_response_code( $response ) && 202 !== wp_remote_retrieve_response_code( $response ) ) {
+			return WP_CLI::error( $response->get_error_message() );
+		}
+
+		// The response will be a 207 if we haven't passed through the fast option.
+		if ( 207 === wp_remote_retrieve_response_code( $response ) ) {
+			$payload = json_decode( wp_remote_retrieve_body( $response ), true );
+			foreach ( $payload['results'] as $light ) {
+				WP_CLI::success( "{$light['label']} is now completing a move effect." );
+			}
+		}
+
+		// We've passed in fast so we don't get a response payload from the API.
+		if ( 202 === wp_remote_retrieve_response_code( $response ) ) {
+			if ( 'all' === $selector ) {
+				$status = 'All lights are';
+			} else {
+				$status = "$selector is";
+			}
+			WP_CLI::success( "$status now completing a move effect." );
 		}
 	}
 

@@ -24,7 +24,7 @@ function state( $payload, $selector = 'all' ) {
 		'timeout' => 10,
 		'body'    => [
 			'power' => 'on',
-			'fast'  => (bool) true,
+			'fast'  => true,
 		],
 	];
 
@@ -235,11 +235,13 @@ function colour( $colour, $fast = false, $selector = 'all' ) {
 
 	$colour_string = validate_web_colours( $colour );
 
+	$fast = filter_var( $fast, FILTER_VALIDATE_BOOLEAN );
+
 	// Set the colour
 	$payload = [
 		'body' => [
 			'power' => 'on',
-			'fast'  => (bool) $fast,
+			'fast'  => $fast,
 			'color' => $colour_string
 		]
 	];
@@ -298,11 +300,13 @@ function validate_colour( $colour ) {
  * @return array[]|mixed|\WP_Error
  */
 function brightness( $brightness, $fast = false, $selector = 'all' ) {
+	$fast = filter_var( $fast, FILTER_VALIDATE_BOOLEAN );
+
 	// Set the brightness
 	$payload = [
 		'body' => [
 			'power'      => 'on',
-			'fast'       => (bool) $fast,
+			'fast'       => $fast,
 			'brightness' => (float) $brightness,
 		]
 	];
