@@ -35,11 +35,10 @@ function breathe( $colour, $from_colour = null, $selector = 'all', $period = 1, 
 		'body'   => [
 			'color'      => $colour_string,
 			'from_color' => $from_colour_string,
-			'selector'   => $selector,
 			'period'     => (int) $period,
 			'cycles'     => (int) $cycles,
 			'persist'    => (bool) $persist,
-			'power_on'   => (bool) $power_on,
+			'power_on'   => $power_on,
 			'peak'       => (float) $peak,
 		],
 	];
