@@ -2,6 +2,7 @@
 use Lifx\Auth;
 use function Lifx\Effects\breathe;
 use function Lifx\Effects\effects;
+use function Lifx\Effects\pulse;
 use function Lifx\List_Lights\list_lights;
 use function Lifx\Power\power;
 use function Lifx\Power\toggle_lights;
@@ -505,6 +506,114 @@ class Lifx_Command {
 			$payload = json_decode( wp_remote_retrieve_body( $response ), true );
 			foreach ( $payload['results'] as $light ) {
 				WP_CLI::success( "{$light['label']} is completing the breathe effect." );
+			}
+		}
+	}
+
+	/**
+	 * Performs a pulse effect by quickly flashing between the given colors. Use the parameters to tweak the effect.
+	 * https://api.developer.lifx.com/reference/pulse-effect
+	 *
+	 * ## OPTIONS
+	 *
+	 * <colour>
+	 * : The colour to set the light to.
+	 *
+	 * [--from_colour=<string>]
+	 * : The colour to start the effect from.
+	 *
+	 * [--selector=<type>]
+	 * : The selector you wish to use. i.e. label, id, group_id, location, location_id
+	 *
+	 * [--period=<seconds>]
+	 * : The time in seconds for one cycle of the effect.
+	 *
+	 * [--cycles=<number>]
+	 * : The time in seconds for one cycle of the effect.
+	 *
+	 * [--persist=<boolean>]
+	 * : If false set the light back to its previous value of 'from_color' when effect ends.
+	 *
+	 * [--power_on=<boolean>]
+	 * : If true, turn the bulb on if it is not already on.
+	 *
+	 * ## EXAMPLES
+	 *
+	 * wp lifx pulse rebeccapurple
+	 * wp lifx pulse deeppink --from_colour=darkblue --cycles=3
+	 * wp lifx pulse deeppink --from_colour=darkblue --cycles=3 --period=5
+	 * wp lifx pulse deeppink --from_colour=rebeccapurple --cycles=3 --period=5 --power_on=false
+	 * wp lifx pulse deeppink --from_colour=rebeccapurple --cycles=3 --period=5 --power_on=false --persist=true
+	 * wp lifx pulse deeppink --from_colour=rebeccapurple --cycles=3 --period=5 --power_on=false --persist=true
+	 *
+	 * @when after_wp_load
+	 */
+	public function pulse( $args, $assoc_args ) {
+		if ( ! empty( $args ) ) {
+			list( $colour ) = $args;
+			$colour = strtolower( $colour );
+		} else {
+			WP_CLI::error( 'Please pass in a colour string, hex value, or string.' );
+		}
+
+		if ( ! empty( $assoc_args['selector'] ) ) {
+			$selector = $assoc_args['selector'];
+		} else {
+			$selector = 'all';
+		}
+
+		if ( ! empty( $assoc_args['from_colour'] ) ) {
+			$from_colour = $assoc_args['from_colour'];
+		} else {
+			$from_colour = null;
+		}
+
+		if ( ! empty( $assoc_args['period'] ) ) {
+			$period = $assoc_args['period'];
+		} else {
+			$period = 1;
+		}
+
+		if ( ! empty( $assoc_args['cycles'] ) ) {
+			$cycles = $assoc_args['cycles'];
+		} else {
+			$cycles = 1;
+		}
+
+		if ( ! empty( $assoc_args['persist'] ) ) {
+			$persist = $assoc_args['persist'];
+		} else {
+			$persist = false;
+		}
+
+		if ( ! empty( $assoc_args['power_on'] ) ) {
+			$power_on = false;
+		} else {
+			$power_on = true;
+		}
+
+		/**
+		 * @param string  $colour      The colour to set the light to. This takes a few formats. i.e. rebeccapurple, random, '#336699', 'hue:120 saturation:1.0 brightness:0.5'
+		 * @param string  $from_colour (Optional) The colour to start the effect from. This takes a few formats. i.e. rebeccapurple, random, '#336699', 'hue:120 saturation:1.0 brightness:0.5'
+		 * @param string  $selector    (Optional) Selector used to filter lights. Defaults to `all`.
+		 * @param int     $period      (Optional) The time in seconds for one cycle of the effect.
+		 * @param int     $cycles      (Optional) The number of times to repeat the effect.
+		 * @param boolean $persist     (Optional) If false set the light back to its previous value of 'from_color' when effect ends, if true leave the last effect color.
+		 * @param boolean $power_on    (Optional) If true, turn the bulb on if it is not already on.
+		 *
+		 */
+		$response = pulse( $colour, $from_colour, $selector, $period, $cycles, $persist, $power_on );
+
+		// The response should be a 207 Multi-Status.
+		if ( 207 !== wp_remote_retrieve_response_code( $response ) ) {
+			return WP_CLI::error( $response->get_error_message() );
+		}
+
+		// The response will be a 207.
+		if ( 207 === wp_remote_retrieve_response_code( $response ) ) {
+			$payload = json_decode( wp_remote_retrieve_body( $response ), true );
+			foreach ( $payload['results'] as $light ) {
+				WP_CLI::success( "{$light['label']} is completing the pulse effect." );
 			}
 		}
 	}
