@@ -1,6 +1,7 @@
 <?php
 use Lifx\Auth;
 use function Lifx\Effects\breathe;
+use function Lifx\Effects\effects;
 use function Lifx\List_Lights\list_lights;
 use function Lifx\Power\power;
 use function Lifx\Power\toggle_lights;
@@ -59,6 +60,9 @@ class Lifx_Command {
 		} else {
 			$selector = 'all';
 		}
+		/**
+		 * @param string $selector (Optional) Selector used to filter lights. Defaults to `all`.
+		 */
 		$response = toggle_lights( $selector );
 		if ( ! empty( $response ) ) {
 			foreach ( $response['results'] as $light ) {
@@ -91,6 +95,10 @@ class Lifx_Command {
 		} else {
 			$selector = 'all';
 		}
+
+		/**
+		 * @param string  $selector (Optional) Selector used to filter lights. Defaults to `all`.
+		 */
 		$response = list_lights( $selector );
 		WP_CLI\Utils\format_items( 'table', $response, [ 'id', 'label', 'power', 'brightness', 'connected' ] );
 	}
@@ -129,6 +137,14 @@ class Lifx_Command {
 			$fast = false;
 		}
 		if ( ! empty( $assoc_args['selector'] ) ) {
+			/**
+			 *
+			 * @param string  $state    (Optional) The state of the power. Defaults to `on`.
+			 * @param boolean $fast     (Optional) Whether the lights should return a payload or just a status code. Defaults to `false`.
+			 * @param string  $selector (Optional) Selector used to filter lights. Defaults to `all`.
+			 *
+			 * @return array[]|mixed|\WP_Error
+			 */
 			$response = power( $power, $fast, $assoc_args['selector'] );
 		} else {
 			$response = power( $power, $fast );
@@ -271,6 +287,12 @@ class Lifx_Command {
 			$selector = 'all';
 		}
 
+		/**
+		 * @param string $colour The colour to set the light to. This takes a few formats. i.e. rebeccapurple, random, "#336699", "hue:120 saturation:1.0 brightness:0.5"
+		 * Full docs are here: https://api.developer.lifx.com/docs/colors
+		 * @param boolean $fast    (Optional) Whether the lights should return a payload or just a status code. Defaults to `false`.
+		 * @param string $selector (Optional) Selector used to filter lights. Defaults to `all`.
+		 */
 		$response = colour( $colour, $fast, $selector );
 
 		if ( 207 !== wp_remote_retrieve_response_code( $response ) && 202 !== wp_remote_retrieve_response_code( $response ) ) {
@@ -339,6 +361,11 @@ class Lifx_Command {
 			$selector = 'all';
 		}
 
+		/**
+		 * @param float   $brightness The brightness level from 0.0 to 1.0. Overrides any brightness set in color (if any).
+		 * @param boolean $fast       (Optional) Whether the lights should return a payload or just a status code. Defaults to `false`.
+		 * @param string  $selector   (Optional) Selector used to filter lights. Defaults to `all`.
+		 */
 		$response = brightness( (float) $brightness, $fast, $selector );
 
 		if ( 207 !== wp_remote_retrieve_response_code( $response ) && 202 !== wp_remote_retrieve_response_code( $response ) ) {
@@ -447,7 +474,7 @@ class Lifx_Command {
 		}
 
 		if ( ! empty( $assoc_args['power_on'] ) ) {
-			$power_on = $assoc_args['power_on'];
+			$power_on = false;
 		} else {
 			$power_on = true;
 		}
@@ -504,6 +531,51 @@ class Lifx_Command {
 			];
 		}
 		WP_CLI\Utils\format_items( 'table', $list, [ 'name', 'value' ] );
+	}
+
+	/**
+	 * Disable any effects running on one or all lights.
+	 *
+	 * ## EXAMPLES
+	 *
+	 * wp lifx effects
+	 * wp lifx effects --power_off=true
+	 * wp lifx effects --selector=label:"I Love Lamp"
+	 * wp lifx effects --selector=label:'I Love Lamp' --power_off=true
+	 *
+	 * @when after_wp_load
+	 */
+	public function effects( $args, $assoc_args ) {
+		if ( ! empty( $assoc_args['selector'] ) ) {
+			$selector = $assoc_args['selector'];
+		} else {
+			$selector = 'all';
+		}
+
+		if ( ! empty( $assoc_args['power_off'] ) ) {
+			$power_off = true;
+		} else {
+			$power_off = false;
+		}
+
+		/**
+		 * @param string  $selector  (Optional) Selector used to filter lights. Defaults to `all`.
+		 * @param boolean $power_off (Optional) Whether to turn off the light(s) as well. Defaults to `false`.
+		 */
+		$response = effects( $selector, $power_off );
+			// The response should be a 207 Multi-Status.
+		if ( 207 !== wp_remote_retrieve_response_code( $response ) ) {
+			return WP_CLI::error( $response->get_error_message() );
+		}
+
+		// The response will be a 207.
+		if ( 207 === wp_remote_retrieve_response_code( $response ) ) {
+			$payload = json_decode( wp_remote_retrieve_body( $response ), true );
+			foreach ( $payload['results'] as $light ) {
+				WP_CLI::success( "Effects on {$light['label']} have been cancelled." );
+			}
+		}
+
 	}
 }
 

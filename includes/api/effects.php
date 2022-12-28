@@ -54,3 +54,39 @@ function breathe( $colour, $from_colour = null, $selector = 'all', $period = 1, 
 
 	return $request;
 }
+
+/**
+ * A function to stop any effects running on all lights or a specific light.
+ *
+ * @param string  $selector  (Optional) Selector used to filter lights. Defaults to `all`.
+ * @param boolean $power_off (Optional) Whether to turn off the light(s) as well. Defaults to `false`.
+ *
+ * @return array|array[]|\WP_Error
+ */
+function effects( $selector = 'all', $power_off = false ) {
+	$headers = get_headers();
+
+	if ( is_wp_error( $headers ) ) {
+		return $headers;
+	}
+
+	$endpoint = LIFX_ENDPOINT . "/lights/$selector/effects/off";
+
+	$defaults = [
+		'method' => 'POST',
+		'body'   => [
+			'power_off' => $power_off,
+		],
+	];
+
+	$payload = array_merge( $defaults, $headers );
+
+	$payload['body'] = wp_json_encode( $payload['body'] );
+
+	$request = wp_safe_remote_post(
+		$endpoint,
+		$payload
+	);
+
+	return $request;
+}
