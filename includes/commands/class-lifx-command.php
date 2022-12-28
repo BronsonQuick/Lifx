@@ -406,9 +406,6 @@ class Lifx_Command {
 	 * [--selector=<type>]
 	 * : The selector you wish to use. i.e. label, id, group_id, location, location_id
 	 *
-	 * [--from_colour=<string>]
-	 * : The colour to start the effect from.
-	 *
 	 * [--period=<seconds>]
 	 * : The time in seconds for one cycle of the effect.
 	 *
