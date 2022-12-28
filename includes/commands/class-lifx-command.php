@@ -1,6 +1,7 @@
 <?php
 use Lifx\Auth;
 use function Lifx\Effects\breathe;
+use function Lifx\Effects\effects;
 use function Lifx\List_Lights\list_lights;
 use function Lifx\Power\power;
 use function Lifx\Power\toggle_lights;
@@ -447,7 +448,7 @@ class Lifx_Command {
 		}
 
 		if ( ! empty( $assoc_args['power_on'] ) ) {
-			$power_on = $assoc_args['power_on'];
+			$power_on = false;
 		} else {
 			$power_on = true;
 		}
@@ -504,6 +505,51 @@ class Lifx_Command {
 			];
 		}
 		WP_CLI\Utils\format_items( 'table', $list, [ 'name', 'value' ] );
+	}
+
+	/**
+	 * Disable any effects running on one or all lights.
+	 *
+	 * ## EXAMPLES
+	 *
+	 * wp lifx effects
+	 * wp lifx effects --power_off=true
+	 * wp lifx effects --selector=label:"I Love Lamp"
+	 * wp lifx effects --selector=label:'I Love Lamp' --power_off=true
+	 *
+	 * @when after_wp_load
+	 */
+	public function effects( $args, $assoc_args ) {
+		if ( ! empty( $assoc_args['selector'] ) ) {
+			$selector = $assoc_args['selector'];
+		} else {
+			$selector = 'all';
+		}
+
+		if ( ! empty( $assoc_args['power_off'] ) ) {
+			$power_off = true;
+		} else {
+			$power_off = false;
+		}
+
+		/**
+		 * @param string  $selector  (Optional) Selector used to filter lights. Defaults to `all`.
+		 * @param boolean $power_off (Optional) Whether to turn off the light(s) as well. Defaults to `false`.
+		 */
+		$response = effects( $selector, $power_off );
+			// The response should be a 207 Multi-Status.
+		if ( 207 !== wp_remote_retrieve_response_code( $response ) ) {
+			return WP_CLI::error( $response->get_error_message() );
+		}
+
+		// The response will be a 207.
+		if ( 207 === wp_remote_retrieve_response_code( $response ) ) {
+			$payload = json_decode( wp_remote_retrieve_body( $response ), true );
+			foreach ( $payload['results'] as $light ) {
+				WP_CLI::success( "Effects on {$light['label']} have been cancelled." );
+			}
+		}
+
 	}
 }
 
