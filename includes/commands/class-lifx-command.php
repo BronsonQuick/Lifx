@@ -129,7 +129,7 @@ class Lifx_Command {
 			$fast = false;
 		}
 		if ( ! empty( $assoc_args['selector'] ) ) {
-			$response = power( $power, $assoc_args['selector'], $fast );
+			$response = power( $power, $fast, $assoc_args['selector'] );
 		} else {
 			$response = power( $power, $fast );
 		}
