@@ -392,8 +392,8 @@ class Lifx_Command {
 	}
 
 	/**
-	 * Sets the colour for all lights or a specific light.
-	 * https://api.developer.lifx.com/docs/colors
+	 * Performs a breathe effect by slowly fading between the given colors. Use the parameters to tweak the effect.
+	 * https://api.developer.lifx.com/reference/breathe-effect
 	 *
 	 * ## OPTIONS
 	 *
