@@ -294,3 +294,52 @@ function cycle( $states, $selector = 'all', $direction = 'forward', $power = 'on
 
 	return $request;
 }
+
+/**
+ * A function to morph through states on all lights or a specific light.
+ * https://api.developer.lifx.com/reference/morph-effect
+ *
+ * @param array   $palette   Between 2 - 10 colors that we can morph through.
+ * @param string  $selector  (Optional) Selector used to filter lights. Defaults to `all`.
+ * @param integer $period    (Optional) The time in seconds for one cycle of the effect.
+ * @param integer $duration (Optional) The time in seconds to apply the change of set over.
+ * @param boolean $power_on    (Optional) If true, turn the bulb on if it is not already on.
+ * @param boolean $fast        (Optional) Whether the lights should return a payload or just a status code. Defaults to `false`.
+ *
+ * @return array|array[]|\WP_Error
+ */
+function morph( $palette, $selector = 'all', $period = 1, $duration = 1, $power_on = true, $fast = true  ) {
+	$headers = get_headers();
+
+	if ( is_wp_error( $headers ) ) {
+		return $headers;
+	}
+
+	$endpoint = LIFX_ENDPOINT . "/lights/$selector/morph";
+
+	$power_on = filter_var( $power_on, FILTER_VALIDATE_BOOLEAN );
+	$fast     = filter_var( $fast, FILTER_VALIDATE_BOOLEAN );
+
+	$defaults = [
+		'method'  => 'POST',
+		'timeout' => 10,
+		'body'    => [
+			'palette'  => $palette,
+			'period'   => $period,
+			'duration' => $duration,
+			'power_on' => $power_on,
+			'fast'     => $fast,
+		],
+	];
+
+	$payload = array_merge( $defaults, $headers );
+
+	$payload['body'] = wp_json_encode( $payload['body'] );
+
+	$request = wp_safe_remote_post(
+		$endpoint,
+		$payload
+	);
+
+	return $request;
+}
