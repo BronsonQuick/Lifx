@@ -61,6 +61,7 @@ function breathe( $colour, $from_colour = null, $selector = 'all', $period = 1, 
 
 /**
  * Performs a pulse effect by quickly flashing between the given colors. Use the parameters to tweak the effect.
+ * https://api.developer.lifx.com/reference/pulse-effect
  *
  * @param string  $colour      The colour to set the light to. This takes a few formats. i.e. rebeccapurple, random, '#336699', 'hue:120 saturation:1.0 brightness:0.5'
  * @param string  $from_colour (Optional) The colour to start the effect from. This takes a few formats. i.e. rebeccapurple, random, '#336699', 'hue:120 saturation:1.0 brightness:0.5'
