@@ -28,6 +28,14 @@ You can type `wp help lifx` to see all the commands. Here are some common ones:
 * `wp lifx colour rebeccapurple --selector=label:"I Love Lamp" --fast=true` - Set the "I Love Lamp" to `#663399`
 * `wp lifx colour random` - Set's all lights to a random colour.
 * `wp lifx colour random --selector=label:"I Love Lamp"` - Set the "I Love Lamp" to a random colour.
+* `wp lifx colour random --selector=label:"I Love Lamp" --zones=0-9` - Set the "I Love Lamp" to a random colour in zones 0-9.
+* `wp lifx brightness 0.5` - Set all lights to 50% brightness.
+* `wp lifx brightness 0.5 --zones=0-9` - Set the brightness to 50% in zones 0-9 for all lights that support zones.
+* `wp lifx brightness 0.5 --zones=10-19|31-40` - Set the brightness to 50% in zones 0-9 and 31-40 for all lights that support zones.
+* `wp lifx brightness 1.0 --fast=true` - Set all lights to 100% brightness and don't receive a response payload.
+* `wp lifx brightness 1.0 --duration=5` - Set all lights to 100% brightness over 5 seconds.
+* `wp lifx brightness 0.75 --selector=group:Bedroom` - Set all lights to 75% brightness in the Bedroom group.
+* `wp lifx brightness 0.75 --selector=label:'I Love Lamp'` - Set all the device called I Love Lamp to 75% brightness.
 * `wp lifx breathe rebeccapurple` - Use the breath effect with the colour `rebeccapurple`.
 * `wp lifx breathe rebeccapurple --from_colour=deeppink --selector=group:Bedroom` - Use the breath effect with the colour `rebeccapurple`.
 * `wp lifx flame` - Use the flame effect on any products that support it i.e. LIFX Tiles.
