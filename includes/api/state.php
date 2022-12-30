@@ -301,6 +301,7 @@ function validate_colour( $colour ) {
  * @param float   $brightness The brightness level from 0.0 to 1.0. Overrides any brightness set in color (if any).
  * @param boolean $fast       (Optional) Whether the lights should return a payload or just a status code. Defaults to `false`.
  * @param string  $selector   (Optional) Selector used to filter lights. Defaults to `all`.
+ * @param integer $duration (Optional) The time in seconds to apply the change of set over.
  *
  * @return array[]|mixed|\WP_Error
  */
