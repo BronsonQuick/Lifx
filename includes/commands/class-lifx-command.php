@@ -7,6 +7,7 @@ use function Lifx\Effects\pulse;
 use function Lifx\List_Lights\list_lights;
 use function Lifx\Power\power;
 use function Lifx\Power\toggle_lights;
+use function Lifx\Scenes\activate_scene;
 use function Lifx\Scenes\list_scenes;
 use function Lifx\State\brightness;
 use function Lifx\State\colour;
@@ -123,6 +124,63 @@ class Lifx_Command {
 		WP_CLI\Utils\format_items( 'table', $response, [ 'name', 'uuid', 'updated_at', 'created_at' ] );
 		} else {
 			WP_CLI::success( 'No scenes found.' );
+		}
+	}
+
+	/**
+	 * Activate a scene on your Lifx lights.
+	 *
+	 * ## OPTIONS
+	 *
+	 * <scene>
+	 * : The scene UUID.
+	 *
+	 * [--fast=<bool>]
+	 * : Whether or not to return a response from the LIFX API.
+	 *
+	 * ## EXAMPLES
+	 *
+	 * wp lifx activate_scene 6df20b49-5631-4e92-9d9e-6129704dc9fc
+	 *
+	 * @when after_wp_load
+	 */
+	public function activate_scene( $args, $assoc_args ) {
+		if ( ! empty( $args ) ) {
+			list( $scene ) = $args;
+		} else {
+			WP_CLI::error( 'Please pass in a scene UUID. You can get this by running `wp lifx list_scenes`' );
+		}
+
+		if ( ! empty( $assoc_args['fast'] ) ) {
+			$fast = $assoc_args['fast'];
+		} else {
+			$fast = false;
+		}
+
+		/**
+		 * @param string $scene The UUID of the scene.
+		 */
+		$response = activate_scene( $scene, $fast );
+
+		if ( is_wp_error( $response ) ) {
+			return WP_CLI::error( $response->get_error_message() );
+		}
+
+		if ( 207 !== wp_remote_retrieve_response_code( $response ) && 202 !== wp_remote_retrieve_response_code( $response ) ) {
+			return WP_CLI::error( $response->get_error_message() );
+		}
+
+		// The response will be a 207 if we haven't passed through the fast option.
+		if ( 207 === wp_remote_retrieve_response_code( $response ) ) {
+			$payload = json_decode( wp_remote_retrieve_body( $response ), true );
+			foreach ( $payload['results'] as $light ) {
+				WP_CLI::success( "The scene has now been activated on {$light['label']}." );
+			}
+		}
+
+		// We've passed in fast so we don't get a response payload from the API.
+		if ( 202 === wp_remote_retrieve_response_code( $response ) ) {
+			WP_CLI::success( "The scene has been activated." );
 		}
 	}
 
