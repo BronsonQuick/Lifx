@@ -2,6 +2,7 @@
 use Lifx\Auth;
 use function Lifx\Effects\breathe;
 use function Lifx\Effects\effects;
+use function Lifx\Effects\flame;
 use function Lifx\Effects\move;
 use function Lifx\Effects\pulse;
 use function Lifx\List_Lights\list_lights;
@@ -731,6 +732,101 @@ class Lifx_Command {
 			foreach ( $payload['results'] as $light ) {
 				WP_CLI::success( "{$light['label']} is completing the pulse effect." );
 			}
+		}
+	}
+
+	/**
+	 * Performs a flame effect on the tiles in your selector. Use the parameters to tweak the effect.
+	 * https://api.developer.lifx.com/reference/flame-effect
+	 *
+	 * ## OPTIONS
+	 *
+	 * [--selector=<type>]
+	 * : The selector you wish to use. i.e. label, id, group_id, location, location_id
+	 *
+	 * [--period=<seconds>]
+	 * : The time in seconds for one cycle of the effect.
+	 *
+	 * [--duration=<seconds>]
+	 * : The time in seconds for one cycle of the effect.
+	 *
+	 * [--power_on=<boolean>]
+	 * : If true, turn the bulb on if it is not already on.
+	 *
+	 * [--fast=<bool>]
+	 * : Whether or not to return a response from the LIFX API.
+	 *
+	 * ## EXAMPLES
+	 *
+	 * wp lifx flame rebeccapurple
+	 *
+	 * @when after_wp_load
+	 */
+	public function flame( $args, $assoc_args ) {
+
+		if ( ! empty( $assoc_args['selector'] ) ) {
+			$selector = $assoc_args['selector'];
+		} else {
+			$selector = 'all';
+		}
+
+		if ( ! empty( $assoc_args['period'] ) ) {
+			$period = $assoc_args['period'];
+		} else {
+			$period = 1;
+		}
+
+		if ( ! empty( $assoc_args['duration'] ) ) {
+			$duration = $assoc_args['duration'];
+		} else {
+			$duration = 1;
+		}
+
+		if ( ! empty( $assoc_args['power_on'] ) ) {
+			$power_on = $assoc_args['power_on'];
+		} else {
+			$power_on = true;
+		}
+
+		if ( ! empty( $assoc_args['fast'] ) ) {
+			$fast = $assoc_args['fast'];
+		} else {
+			$fast = false;
+		}
+
+		/**
+		 *
+		 * @param string  $selector    (Optional) Selector used to filter lights. Defaults to `all`.
+		 * @param int     $period      (Optional) This controls how quickly the flame runs. It is measured in seconds. A lower number means the animation is faster.
+		 * @param int     $duration    (Optional) How long the animation lasts for in seconds. Defaults to `1`.
+		 * @param boolean $power_on    (Optional) If true, turn the bulb on if it is not already on.
+		 * @param boolean $fast        (Optional) Whether the lights should return a payload or just a status code. Defaults to `false`.
+		 *
+		 * @return array[]|mixed|\WP_Error
+		 */
+
+		$response = flame( $selector, $period, $duration, $power_on, $fast );
+
+				if ( 207 !== wp_remote_retrieve_response_code( $response ) && 202 !== wp_remote_retrieve_response_code( $response ) ) {
+			return WP_CLI::error( $response->get_error_message() );
+		}
+
+		// The response will be a 207 if we haven't passed through the fast option.
+		if ( 207 === wp_remote_retrieve_response_code( $response ) ) {
+			$payload = json_decode( wp_remote_retrieve_body( $response ), true );
+			foreach ( $payload['results'] as $light ) {
+				WP_CLI::success( "{$light['label']} is now completing a flame effect." );
+			}
+		}
+
+		// We've passed in fast so we don't get a response payload from the API.
+		if ( 202 === wp_remote_retrieve_response_code( $response ) ) {
+			if ( 'all' === $selector ) {
+				$status = 'All lights are';
+			} else {
+				$status = "$selector is";
+			}
+			WP_CLI::success( "$status now completing a flame effect." );
 		}
 	}
 

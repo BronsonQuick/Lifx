@@ -114,6 +114,53 @@ function pulse( $colour, $from_colour = null, $selector = 'all', $period = 1, $c
 }
 
 /**
+ * Performs a flame effect on the tiles in your selector. Use the parameters to tweak the effect.
+ * https://api.developer.lifx.com/reference/flame-effect
+ *
+ * @param string  $selector    (Optional) Selector used to filter lights. Defaults to `all`.
+ * @param int     $period      (Optional) The time in seconds for one cycle of the effect.
+ * @param int     $cycles      (Optional) The number of times to repeat the effect.
+ * @param boolean $power_on    (Optional) If true, turn the bulb on if it is not already on.
+ * @param boolean $fast        (Optional) Whether the lights should return a payload or just a status code. Defaults to `false`.
+ *
+ * @return array[]|mixed|\WP_Error
+ */
+function flame( $selector = 'all', $period = 1, $duration = 1, $power_on = true, $fast = false ) {
+	$headers = get_headers();
+
+	if ( is_wp_error( $headers ) ) {
+		return $headers;
+	}
+
+	$endpoint = LIFX_ENDPOINT . "/lights/$selector/effects/flame";
+
+	$power_on = filter_var( $power_on, FILTER_VALIDATE_BOOLEAN );
+	$fast     = filter_var( $fast, FILTER_VALIDATE_BOOLEAN );
+
+	$defaults = [
+		'method'  => 'POST',
+		'timeout' => 10,
+		'body'    => [
+			'period'     => (int) $period,
+			'duraction'  => (int) $duration,
+			'power_on'   => $power_on,
+			'fast'       => $fast
+		],
+	];
+
+	$payload = array_merge( $defaults, $headers );
+
+	$payload['body'] = wp_json_encode( $payload['body'] );
+
+	$request = wp_safe_remote_post(
+		$endpoint,
+		$payload
+	);
+
+	return $request;
+}
+
+/**
  * Performs a move effect on a linear device with zones, by moving the current pattern across the device. Use the parameters to tweak the effect.
  *
  * @param string  $direction   (Optional) Move direction, can be forward or backward.

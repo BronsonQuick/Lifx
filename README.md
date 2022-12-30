@@ -30,6 +30,9 @@ You can type `wp help lifx` to see all the commands. Here are some common ones:
 * `wp lifx colour random --selector=label:"I Love Lamp"` - Set the "I Love Lamp" to a random colour.
 * `wp lifx breathe rebeccapurple` - Use the breath effect with the colour `rebeccapurple`.
 * `wp lifx breathe rebeccapurple --from_colour=deeppink --selector=group:Bedroom` - Use the breath effect with the colour `rebeccapurple`.
+* `wp lifx flame` - Use the flame effect on any products that support it i.e. LIFX Tiles.
+* `wp lifx flame --selector=label:"Tiles" --cycles=2 --period=2` - Use the flame effect.
+* `wp lifx flame --selector=label:"Tiles" --cycles=2 --period=2 --power_on=false --fast=true` - Use the flame effect.
 * `wp lifx pulse rebeccapurple` - Use the pulse effect with the colour `rebeccapurple`. 
 * `wp lifx pulse deeppink --from_colour=darkblue --cycles=3` - Use the pulse effect with the colour `deeppink` and `darkblue` 3 times. 
 * `wp lifx pulse deeppink --from_colour=darkblue --cycles=3 --period=5` - Use the pulse effect with the colour `deeppink` and `darkblue` 3 times over 5 seconds.
