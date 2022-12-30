@@ -36,15 +36,17 @@ function toggle_lights( $selector = 'all' ) {
  * @param string  $state    (Optional) The state of the power. Defaults to `on`.
  * @param boolean $fast     (Optional) Whether the lights should return a payload or just a status code. Defaults to `false`.
  * @param string  $selector (Optional) Selector used to filter lights. Defaults to `all`.
+ * @param integer $duration (Optional) The duration for the change of state. Defaults to `1`.
  *
  * @return array[]|mixed|\WP_Error
  */
-function power( $state = 'on', $fast = false, $selector = 'all' ) {
+function power( $state = 'on', $fast = false, $selector = 'all', $duration = 1 ) {
 
 	$payload = [
 		'body' => [
-			'power' => $state,
-			'fast'  => $fast,
+			'power'    => $state,
+			'fast'     => $fast,
+			'duration' => (int) $duration,
 		]
 	];
 

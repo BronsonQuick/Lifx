@@ -227,14 +227,15 @@ function get_colours() {
 }
 
 /**
- * @param string $colour The colour to set the light to. This takes a few formats. i.e. rebeccapurple, random, "#336699", "hue:120 saturation:1.0 brightness:0.5"
+ * @param string  $colour   The colour to set the light to. This takes a few formats. i.e. rebeccapurple, random, "#336699", "hue:120 saturation:1.0 brightness:0.5"
  * Full docs are here: https://api.developer.lifx.com/docs/colors
- * @param boolean $fast    (Optional) Whether the lights should return a payload or just a status code. Defaults to `false`.
- * @param string $selector (Optional) Selector used to filter lights. Defaults to `all`.
+ * @param boolean $fast     (Optional) Whether the lights should return a payload or just a status code. Defaults to `false`.
+ * @param string  $selector (Optional) Selector used to filter lights. Defaults to `all`.
+ * @param integer $duration (Optional) The time in seconds to apply the change of set over.
  *
  * @return array|array[]|mixed|\WP_Error
  */
-function colour( $colour, $fast = false, $selector = 'all' ) {
+function colour( $colour, $fast = false, $selector = 'all', $duration = 1 ) {
 
 	$colour_string = validate_web_colours( $colour );
 
@@ -243,9 +244,10 @@ function colour( $colour, $fast = false, $selector = 'all' ) {
 	// Set the colour
 	$payload = [
 		'body' => [
-			'power' => 'on',
-			'fast'  => $fast,
-			'color' => $colour_string
+			'power'    => 'on',
+			'fast'     => $fast,
+			'color'    => $colour_string,
+			'duration' => (int) $duration,
 		]
 	];
 
@@ -302,7 +304,7 @@ function validate_colour( $colour ) {
  *
  * @return array[]|mixed|\WP_Error
  */
-function brightness( $brightness, $fast = false, $selector = 'all' ) {
+function brightness( $brightness, $fast = false, $selector = 'all', $duration = 1 ) {
 	$fast = filter_var( $fast, FILTER_VALIDATE_BOOLEAN );
 
 	// Set the brightness
@@ -311,6 +313,7 @@ function brightness( $brightness, $fast = false, $selector = 'all' ) {
 			'power'      => 'on',
 			'fast'       => $fast,
 			'brightness' => (float) $brightness,
+			'duration'   => (int) $duration,
 		]
 	];
 

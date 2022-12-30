@@ -199,12 +199,16 @@ class Lifx_Command {
 	 * [--fast=<bool>]
 	 * : Whether or not to return a response from the LIFX API.
 	 *
+	 * [--duration=<seconds>]
+	 * : The time in seconds to apply the change of set over.
+	 *
 	 * ## EXAMPLES
 	 *
 	 * wp lifx power on
 	 * wp lifx power off
 	 * wp lifx power on --selector=label:"I Love Lamp"
 	 * wp lifx power on --selector=label:'I Love Lamp' --fast=true
+	 * wp lifx power on --selector=label:'I Love Lamp' --fast=true --duration=5
 	 *
 	 * @when after_wp_load
 	 */
@@ -224,19 +228,23 @@ class Lifx_Command {
 		} else {
 			$selector = 'all';
 		}
-		if ( ! empty( $assoc_args['selector'] ) ) {
-			/**
-			 *
-			 * @param string  $state    (Optional) The state of the power. Defaults to `on`.
-			 * @param boolean $fast     (Optional) Whether the lights should return a payload or just a status code. Defaults to `false`.
-			 * @param string  $selector (Optional) Selector used to filter lights. Defaults to `all`.
-			 *
-			 * @return array[]|mixed|\WP_Error
-			 */
-			$response = power( $power, $fast, $selector );
+
+		if ( ! empty( $assoc_args['duration'] ) ) {
+			$duration = $assoc_args['duration'];
 		} else {
-			$response = power( $power, $fast );
+			$duration = 1;
 		}
+
+		/**
+		 *
+		 * @param string  $state    (Optional) The state of the power. Defaults to `on`.
+		 * @param boolean $fast     (Optional) Whether the lights should return a payload or just a status code. Defaults to `false`.
+		 * @param string  $selector (Optional) Selector used to filter lights. Defaults to `all`.
+		 * @param integer $duration (Optional) The time in seconds to apply the change of set over.
+		 *
+		 * @return array[]|mixed|\WP_Error
+		 */
+		$response = power( $power, $fast, $selector, $duration );
 
 		if ( is_wp_error( $response ) ) {
 			return WP_CLI::error( $response->get_error_message() );
@@ -332,11 +340,15 @@ class Lifx_Command {
 	 * [--fast=<bool>]
 	 * : Whether or not to return a response from the LIFX API.
 	 *
+	 * [--duration=<seconds>]
+	 * : The time in seconds to apply the change of set over.
+	 *
 	 * ## EXAMPLES
 	 *
 	 * wp lifx colour rebeccapurple
 	 * wp lifx colour rebeccapurple --fast=true
 	 * wp lifx colour rebeccapurple --selector=label:"I Love Lamp" --fast=true
+	 * wp lifx colour rebeccapurple --duration=5
 	 * wp lifx colour random
 	 * wp lifx colour "#663399"
 	 * wp lifx colour "hue:120 saturation:1.0 brightness:0.5"
@@ -374,13 +386,20 @@ class Lifx_Command {
 			$selector = 'all';
 		}
 
+		if ( ! empty( $assoc_args['duration'] ) ) {
+			$duration = $assoc_args['duration'];
+		} else {
+			$duration = 1;
+		}
+
 		/**
-		 * @param string $colour The colour to set the light to. This takes a few formats. i.e. rebeccapurple, random, "#336699", "hue:120 saturation:1.0 brightness:0.5"
+		 * @param string  $colour The colour to set the light to. This takes a few formats. i.e. rebeccapurple, random, "#336699", "hue:120 saturation:1.0 brightness:0.5"
 		 * Full docs are here: https://api.developer.lifx.com/docs/colors
 		 * @param boolean $fast    (Optional) Whether the lights should return a payload or just a status code. Defaults to `false`.
-		 * @param string $selector (Optional) Selector used to filter lights. Defaults to `all`.
+		 * @param string  $selector (Optional) Selector used to filter lights. Defaults to `all`.
+		 * @param integer $duration (Optional) The time in seconds to apply the change of set over.
 		 */
-		$response = colour( $colour, $fast, $selector );
+		$response = colour( $colour, $fast, $selector, $duration );
 
 		if ( 207 !== wp_remote_retrieve_response_code( $response ) && 202 !== wp_remote_retrieve_response_code( $response ) ) {
 			return WP_CLI::error( $response->get_error_message() );
@@ -420,10 +439,14 @@ class Lifx_Command {
 	 * [--fast=<bool>]
 	 * : Whether or not to return a response from the LIFX API.
 	 *
+	 * [--duration=<seconds>]
+	 * : The time in seconds to apply the change of set over.
+	 *
 	 * ## EXAMPLES
 	 *
 	 * wp lifx brightness 0.5
 	 * wp lifx brightness 1.0 --fast=true
+	 * wp lifx brightness 1.0 --duration=5
 	 * wp lifx brightness 0.75 --selector=group:Bedroom
 	 * wp lifx brightness 0.75 --selector=label:'I Love Lamp'
 	 *
@@ -448,12 +471,19 @@ class Lifx_Command {
 			$selector = 'all';
 		}
 
+		if ( ! empty( $assoc_args['duration'] ) ) {
+			$duration = $assoc_args['duration'];
+		} else {
+			$duration = 1;
+		}
+
 		/**
 		 * @param float   $brightness The brightness level from 0.0 to 1.0. Overrides any brightness set in color (if any).
 		 * @param boolean $fast       (Optional) Whether the lights should return a payload or just a status code. Defaults to `false`.
 		 * @param string  $selector   (Optional) Selector used to filter lights. Defaults to `all`.
+		 * @param integer $duration (Optional) The time in seconds to apply the change of set over.
 		 */
-		$response = brightness( (float) $brightness, $fast, $selector );
+		$response = brightness( (float) $brightness, $fast, $selector, $duration );
 
 		if ( 207 !== wp_remote_retrieve_response_code( $response ) && 202 !== wp_remote_retrieve_response_code( $response ) ) {
 			return WP_CLI::error( $response->get_error_message() );
