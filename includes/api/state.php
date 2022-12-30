@@ -10,11 +10,15 @@ use function \Lifx\Auth\get_headers;
  *
  * @return array[]|mixed|\WP_Error
  */
-function state( $payload, $selector = 'all' ) {
+function state( $payload, $selector = 'all', $zones = '' ) {
 	$headers = get_headers();
 
 	if ( is_wp_error( $headers ) ) {
 		return $headers;
+	}
+
+	if ( ! empty( $zones ) ) {
+		$selector .= "|$zones";
 	}
 
 	$endpoint = LIFX_ENDPOINT . "/lights/$selector/state";
@@ -232,10 +236,11 @@ function get_colours() {
  * @param boolean $fast     (Optional) Whether the lights should return a payload or just a status code. Defaults to `false`.
  * @param string  $selector (Optional) Selector used to filter lights. Defaults to `all`.
  * @param integer $duration (Optional) The time in seconds to apply the change of set over.
+ * @param string  $zones    (Optional) The zones that you'd like the brightness applied to.
  *
  * @return array|array[]|mixed|\WP_Error
  */
-function colour( $colour, $fast = false, $selector = 'all', $duration = 1 ) {
+function colour( $colour, $fast = false, $selector = 'all', $duration = 1, $zones = '' ) {
 
 	$colour_string = validate_web_colours( $colour );
 
@@ -251,7 +256,7 @@ function colour( $colour, $fast = false, $selector = 'all', $duration = 1 ) {
 		]
 	];
 
-	$request = state( $payload, $selector );
+	$request = state( $payload, $selector, $zones );
 
 	return $request;
 }
@@ -301,11 +306,12 @@ function validate_colour( $colour ) {
  * @param float   $brightness The brightness level from 0.0 to 1.0. Overrides any brightness set in color (if any).
  * @param boolean $fast       (Optional) Whether the lights should return a payload or just a status code. Defaults to `false`.
  * @param string  $selector   (Optional) Selector used to filter lights. Defaults to `all`.
- * @param integer $duration (Optional) The time in seconds to apply the change of set over.
+ * @param integer $duration   (Optional) The time in seconds to apply the change of set over.
+ * @param string  $zones      (Optional) The zones that you'd like the brightness applied to.
  *
  * @return array[]|mixed|\WP_Error
  */
-function brightness( $brightness, $fast = false, $selector = 'all', $duration = 1 ) {
+function brightness( $brightness, $fast = false, $selector = 'all', $duration = 1, $zones = '' ) {
 	$fast = filter_var( $fast, FILTER_VALIDATE_BOOLEAN );
 
 	// Set the brightness
@@ -318,7 +324,7 @@ function brightness( $brightness, $fast = false, $selector = 'all', $duration = 
 		]
 	];
 
-	$request = state( $payload, $selector );
+	$request = state( $payload, $selector, $zones );
 
 	return $request;
 }

@@ -393,14 +393,21 @@ class Lifx_Command {
 			$duration = 1;
 		}
 
+		if ( ! empty( $assoc_args['zones'] ) ) {
+			$zones = $assoc_args['zones'];
+		} else {
+			$zones = '';
+		}
+
 		/**
 		 * @param string  $colour The colour to set the light to. This takes a few formats. i.e. rebeccapurple, random, "#336699", "hue:120 saturation:1.0 brightness:0.5"
 		 * Full docs are here: https://api.developer.lifx.com/docs/colors
 		 * @param boolean $fast    (Optional) Whether the lights should return a payload or just a status code. Defaults to `false`.
 		 * @param string  $selector (Optional) Selector used to filter lights. Defaults to `all`.
 		 * @param integer $duration (Optional) The time in seconds to apply the change of set over.
+		 * @param string  $zones    (Optional) The zones that you'd like the brightness applied to.
 		 */
-		$response = colour( $colour, $fast, $selector, $duration );
+		$response = colour( $colour, $fast, $selector, $duration, $zones );
 
 		if ( 207 !== wp_remote_retrieve_response_code( $response ) && 202 !== wp_remote_retrieve_response_code( $response ) ) {
 			return WP_CLI::error( $response->get_error_message() );
@@ -410,7 +417,11 @@ class Lifx_Command {
 		if ( 207 === wp_remote_retrieve_response_code( $response ) ) {
 			$payload = json_decode( wp_remote_retrieve_body( $response ), true );
 			foreach ( $payload['results'] as $light ) {
-				WP_CLI::success( "{$light['label']} is now set to $colour." );
+				if ( empty( $zones ) ) {
+					WP_CLI::success( "{$light['label']} is now set to $colour." );
+				} else {
+					WP_CLI::success( "{$light['label']} is now set to $colour in zones $zones." );
+				}
 			}
 		}
 
@@ -421,7 +432,11 @@ class Lifx_Command {
 			} else {
 				$status = "$selector is";
 			}
-			WP_CLI::success( "$status now set to $colour." );
+			if ( empty( $zones ) ) {
+				WP_CLI::success( "$status now set to $colour." );
+			} else {
+				WP_CLI::success( "$status now set to $colour in zones $zones." );
+			}
 		}
 	}
 
@@ -443,9 +458,14 @@ class Lifx_Command {
 	 * [--duration=<seconds>]
 	 * : The time in seconds to apply the change of set over.
 	 *
+	 * [--zones=<0-9>]
+	 * : The zones to apply the changes to. Only applicable to LIFX Strip Z and LIFX Beams.
+	 *
 	 * ## EXAMPLES
 	 *
 	 * wp lifx brightness 0.5
+	 * wp lifx brightness 0.5 --zones=0-9
+	 * wp lifx brightness 0.5 --zones=10-19|31-40
 	 * wp lifx brightness 1.0 --fast=true
 	 * wp lifx brightness 1.0 --duration=5
 	 * wp lifx brightness 0.75 --selector=group:Bedroom
@@ -478,13 +498,20 @@ class Lifx_Command {
 			$duration = 1;
 		}
 
+		if ( ! empty( $assoc_args['zones'] ) ) {
+			$zones = $assoc_args['zones'];
+		} else {
+			$zones = '';
+		}
+
 		/**
 		 * @param float   $brightness The brightness level from 0.0 to 1.0. Overrides any brightness set in color (if any).
 		 * @param boolean $fast       (Optional) Whether the lights should return a payload or just a status code. Defaults to `false`.
 		 * @param string  $selector   (Optional) Selector used to filter lights. Defaults to `all`.
-		 * @param integer $duration (Optional) The time in seconds to apply the change of set over.
+		 * @param integer $duration   (Optional) The time in seconds to apply the change of set over.
+		 * @param string  $zones      (Optional) The zones that you'd like the brightness applied to.
 		 */
-		$response = brightness( (float) $brightness, $fast, $selector, $duration );
+		$response = brightness( (float) $brightness, $fast, $selector, $duration, $zones );
 
 		if ( 207 !== wp_remote_retrieve_response_code( $response ) && 202 !== wp_remote_retrieve_response_code( $response ) ) {
 			return WP_CLI::error( $response->get_error_message() );
@@ -494,7 +521,11 @@ class Lifx_Command {
 		if ( 207 === wp_remote_retrieve_response_code( $response ) ) {
 			$payload = json_decode( wp_remote_retrieve_body( $response ), true );
 			foreach ( $payload['results'] as $light ) {
-				WP_CLI::success( "{$light['label']} is now set at $brightness brightness." );
+				if ( empty( $zones ) ) {
+					WP_CLI::success( "{$light['label']} is now set at $brightness brightness." );
+				} else {
+					WP_CLI::success( "{$light['label']} is now set at $brightness brightness in zones $zones." );
+				}
 			}
 		}
 
@@ -505,7 +536,11 @@ class Lifx_Command {
 			} else {
 				$status = "$selector is";
 			}
-			WP_CLI::success( "$status now at $brightness brightness." );
+			if ( empty( $zones ) ) {
+				WP_CLI::success( "$status now at $brightness brightness." );
+			} else {
+				WP_CLI::success( "$status now at $brightness brightness in zones $zones." );
+			}
 		}
 	}
 
