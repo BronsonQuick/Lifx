@@ -7,6 +7,7 @@ use function Lifx\Effects\pulse;
 use function Lifx\List_Lights\list_lights;
 use function Lifx\Power\power;
 use function Lifx\Power\toggle_lights;
+use function Lifx\Scenes\list_scenes;
 use function Lifx\State\brightness;
 use function Lifx\State\colour;
 use function Lifx\State\get_colours;
@@ -103,6 +104,26 @@ class Lifx_Command {
 		 */
 		$response = list_lights( $selector );
 		WP_CLI\Utils\format_items( 'table', $response, [ 'id', 'label', 'power', 'brightness', 'connected' ] );
+	}
+
+	/**
+	 * Lists your Lifx scenes.
+	 * https://api.developer.lifx.com/reference/list-scenes
+	 *
+	 * ## EXAMPLES
+	 *
+	 * wp lifx scenes
+	 *
+	 * @when after_wp_load
+	 */
+	public function list_scenes() {
+
+		$response = list_scenes();
+		if ( ! empty( $response ) ) {
+		WP_CLI\Utils\format_items( 'table', $response, [ 'name', 'updated_at', 'created_at' ] );
+		} else {
+			WP_CLI::success( 'No scenes found.' );
+		}
 	}
 
 	/**
