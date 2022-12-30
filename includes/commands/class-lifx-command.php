@@ -120,7 +120,7 @@ class Lifx_Command {
 
 		$response = list_scenes();
 		if ( ! empty( $response ) ) {
-		WP_CLI\Utils\format_items( 'table', $response, [ 'name', 'updated_at', 'created_at' ] );
+		WP_CLI\Utils\format_items( 'table', $response, [ 'name', 'uuid', 'updated_at', 'created_at' ] );
 		} else {
 			WP_CLI::success( 'No scenes found.' );
 		}
