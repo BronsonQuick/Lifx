@@ -17,7 +17,7 @@ use function Lifx\State\validate_colour;
 
 class Lifx_Command {
 	/**
-	 * Prints your Lifx personal access token.
+	 * Prints your LIFX personal access token.
 	 *
 	 * ## EXAMPLES
 	 *
@@ -27,11 +27,11 @@ class Lifx_Command {
 	 */
 	public function get_token() {
 		$token = Auth\get_token();
-		WP_CLI::success( "Your Lifx token is set to: $token" );
+		WP_CLI::success( "Your LIFX token is set to: $token" );
 	}
 
 	/**
-	 * Checks to see if your Lifx Personal Token is correctly authenticating.
+	 * Checks to see if your LIFX Personal Token is correctly authenticating.
 	 *
 	 * ## EXAMPLES
 	 *
@@ -45,7 +45,7 @@ class Lifx_Command {
 	}
 
 	/**
-	 * Toggles your Lifx light.
+	 * Toggles your LIFX light.
 	 *
 	 * ## OPTIONS
 	 *
@@ -79,7 +79,7 @@ class Lifx_Command {
 	}
 
 	/**
-	 * Lists your Lifx lights.
+	 * Lists your LIFX lights.
 	 * https://api.developer.lifx.com/reference/set-state
 	 *
 	 * ## OPTIONS
@@ -109,7 +109,7 @@ class Lifx_Command {
 	}
 
 	/**
-	 * Lists your Lifx scenes.
+	 * Lists your LIFX scenes.
 	 * https://api.developer.lifx.com/reference/list-scenes
 	 *
 	 * ## EXAMPLES
@@ -129,7 +129,7 @@ class Lifx_Command {
 	}
 
 	/**
-	 * Activate a scene on your Lifx lights.
+	 * Activate a scene on your LIFX lights.
 	 *
 	 * ## OPTIONS
 	 *
@@ -344,12 +344,17 @@ class Lifx_Command {
 	 * [--duration=<seconds>]
 	 * : The time in seconds to apply the change of set over.
 	 *
+	 * [--zones=<0-9>]
+	 * : The zones to apply the changes to. Only applicable to LIFX Strip Z and LIFX Beams.
+	 *
 	 * ## EXAMPLES
 	 *
 	 * wp lifx colour rebeccapurple
 	 * wp lifx colour rebeccapurple --fast=true
 	 * wp lifx colour rebeccapurple --selector=label:"I Love Lamp" --fast=true
 	 * wp lifx colour rebeccapurple --duration=5
+	 * wp lifx colour rebeccapurple --zones=0-9
+	 * wp lifx colour rebeccapurple --zones=10-19|31-40
 	 * wp lifx colour random
 	 * wp lifx colour "#663399"
 	 * wp lifx colour "hue:120 saturation:1.0 brightness:0.5"
