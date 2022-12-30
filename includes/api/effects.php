@@ -201,3 +201,48 @@ function effects( $selector = 'all', $power_off = false ) {
 
 	return $request;
 }
+
+/**
+ * A function to cycle through states on all lights or a specific light.
+ * https://api.developer.lifx.com/reference/cycle
+ *
+ * @param array   $states    Between 2 - 10 states that we can cycle through.
+ * @param string  $selector  (Optional) Selector used to filter lights. Defaults to `all`.
+ * @param string  $direction (Optional) The direction to cycle through the states. Defaults to `forward`
+ * @param boolean $power     (Optional) Whether to turn off the light(s) as well. Defaults to `on`.
+ *
+ * @return array|array[]|\WP_Error
+ */
+function cycle( $states, $selector = 'all', $direction = 'forward', $power = 'on', $saturation = 1 ) {
+	$headers = get_headers();
+
+	if ( is_wp_error( $headers ) ) {
+		return $headers;
+	}
+
+	$endpoint = LIFX_ENDPOINT . "/lights/$selector/cycle";
+
+	$defaults = [
+		'method'  => 'POST',
+		'timeout' => 10,
+		'body'    => [
+			'defaults' => [
+				'power'      => $power,
+				'saturation' => (float) $saturation,
+			],
+			'direction' => $direction,
+			'states'    => $states,
+		],
+	];
+
+	$payload = array_merge( $defaults, $headers );
+
+	$payload['body'] = wp_json_encode( $payload['body'] );
+
+	$request = wp_safe_remote_post(
+		$endpoint,
+		$payload
+	);
+
+	return $request;
+}
