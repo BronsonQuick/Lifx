@@ -64,9 +64,8 @@ function check_token() {
 			)
 		);
 		} else {
-			$result = __('Successfully authenticated your Lifx Personal Access Token.', 'lifx' );
+			return new \WP_HTTP_Response( __('Successfully authenticated your Lifx Personal Access Token.', 'lifx' ), 200 );
 		}
-	return $result;
 }
 
 function get_headers() {

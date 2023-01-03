@@ -41,7 +41,11 @@ class Lifx_Command {
 	 */
 	public function check_token() {
 		$response = Auth\check_token();
-		WP_CLI::success( $response );
+		if ( $response instanceof WP_HTTP_Response ) {
+			WP_CLI::success( $response->get_data() );
+		} else {
+			WP_CLI::success( $response );
+		}
 	}
 
 	/**
