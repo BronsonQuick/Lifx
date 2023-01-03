@@ -1,6 +1,11 @@
 <?php
 namespace Lifx\Options_Page;
 
+use WP_HTTP_Response;
+use function Lifx\Auth\check_token;
+use function Lifx\List_Lights\list_lights;
+use function Lifx\State\get_colours;
+
 /**
  * Register all our functions for CMB2.
  *
@@ -8,6 +13,7 @@ namespace Lifx\Options_Page;
  */
 function bootstrap() {
 	add_action( 'cmb2_admin_init', __NAMESPACE__ . '\\register_metabox' );
+	add_action( 'cmb2_admin_init', __NAMESPACE__ . '\\light_tabs' );
 }
 
 /**
@@ -15,11 +21,13 @@ function bootstrap() {
  */
 function register_metabox() {
 	$cmb = new_cmb2_box( [
-		'id'           => 'lifx_options',
+		'id'           => 'lifx_options_page',
 		'title'        => esc_html__( 'LIFX', 'lifx' ),
 		'object_types' => [ 'options-page' ],
 		'option_key'   => 'lifx_options',
-		'parent_slug'  => 'tools.php'
+		'tab_group'    => 'lifx_options',
+		'tab_title'    => __( 'Settings', 'lifx' ),
+		'icon_url'     => 'dashicons-lightbulb',
 	] );
 
 	// Set our CMB2 fields
@@ -61,4 +69,56 @@ function get_option( $key = '', $default = false ) {
 	}
 
 	return $val;
+}
+
+function light_tabs() {
+	// Check the authentication.
+	$auth = check_token();
+
+	// Bail if we aren't able to authenticate.
+	if ( ! $auth instanceof WP_HTTP_Response ) {
+		return;
+	}
+
+	// Get all the lights.
+	$lights = list_lights();
+
+	// Loop over the lights and add a tab for each one.
+	if ( ! empty( $lights ) ) {
+		foreach ( $lights as $light ) {
+			$sanitised_label = strtolower( sanitize_title( $light['label'] ) );
+			$args = [
+				'id'           => "lifx_${sanitised_label}_options",
+				'title'        => esc_html__( "${light['label']} Settings", 'lifx' ),
+				'object_types' => [ 'options-page' ],
+				'option_key'   => "lifx_${sanitised_label}_options",
+				'tab_group'    => 'lifx_options',
+				'parent_slug'  => 'lifx_options',
+				'tab_title'    => $light['label'],
+			];
+			$lights_options = new_cmb2_box( $args );
+
+			$lights_options->add_field( [
+				'name'     => "${light['label']} Colour",
+				'id'       => "${sanitised_label}_color",
+				'type'     => 'colorpicker',
+				'default'  => '#663399',
+				'attributes' => [
+					'data-colorpicker' => json_encode( [
+						'width'    => 500,
+						'alpha'    => true,
+						'palettes' => false,
+					] ),
+				]
+			] );
+			// Store the device id
+			$lights_options->add_field( [
+				'id'   => $light['id'],
+				'type' => 'hidden',
+				]
+			);
+		}
+	}
+
+
 }
