@@ -411,12 +411,13 @@ class Lifx_Command {
 		/**
 		 * @param string  $colour The colour to set the light to. This takes a few formats. i.e. rebeccapurple, random, "#336699", "hue:120 saturation:1.0 brightness:0.5"
 		 * Full docs are here: https://api.developer.lifx.com/docs/colors
+		 * @param string  $power   (Optional) Whether or not to turn on the light. Defaults to `on`.
 		 * @param boolean $fast    (Optional) Whether the lights should return a payload or just a status code. Defaults to `false`.
 		 * @param string  $selector (Optional) Selector used to filter lights. Defaults to `all`.
 		 * @param integer $duration (Optional) The time in seconds to apply the change of set over.
 		 * @param string  $zones    (Optional) The zones that you'd like the brightness applied to.
 		 */
-		$response = colour( $colour, $fast, $selector, $duration, $zones );
+		$response = colour( $colour, 'on', $fast, $selector, $duration, $zones );
 
 		if ( 207 !== wp_remote_retrieve_response_code( $response ) && 202 !== wp_remote_retrieve_response_code( $response ) ) {
 			return WP_CLI::error( $response->get_error_message() );
