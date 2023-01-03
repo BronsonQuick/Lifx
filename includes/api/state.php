@@ -240,7 +240,7 @@ function get_colours() {
  *
  * @return array|array[]|mixed|\WP_Error
  */
-function colour( $colour, $fast = false, $selector = 'all', $duration = 1, $zones = '' ) {
+function colour( $colour, $power = 'on', $fast = false, $selector = 'all', $duration = 1, $zones = '' ) {
 
 	$colour_string = validate_web_colours( $colour );
 
@@ -249,7 +249,7 @@ function colour( $colour, $fast = false, $selector = 'all', $duration = 1, $zone
 	// Set the colour
 	$payload = [
 		'body' => [
-			'power'    => 'on',
+			'power'    => $power,
 			'fast'     => $fast,
 			'color'    => $colour_string,
 			'duration' => (int) $duration,
