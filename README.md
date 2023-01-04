@@ -51,3 +51,5 @@ You can type `wp help lifx` to see all the commands. Here are some common ones:
 * `wp lifx move backward --cycles=10 --period=10 --power_on=false` - Perform a move effect on any lights that can do that effect, ten times over 10 seconds but only if the light is already on.
 * `wp lifx move backward --selector=group:"Music Room"` - Perform a move effect on any lights that can do that effect in the group "Music Room".
 * `wp lifx move backward --selector=group:"Music Room" --fast=true` - Perform a move effect on any lights that can do that effect in the group "Music Room" but don't return a payload response so it's faster.
+* `wp lifx get_multizones` - Determine if any lights on the network support multizones.
+* `wp lifx get_multizones --selector=label:"Beam Me Up!"` - Determine if the "I Love Lamp" light supports multizone.
