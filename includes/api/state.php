@@ -48,6 +48,45 @@ function state( $payload, $selector = 'all', $zones = '' ) {
 }
 
 /**
+ * A function to set up to 50 states of a light, lights or zones.
+ * @param $states
+ * @param $fast
+ *
+ * @return array|array[]|\WP_Error
+ */
+function states( $states, $fast = true ) {
+	$headers = get_headers();
+
+	if ( is_wp_error( $headers ) ) {
+		return $headers;
+	}
+	$endpoint = LIFX_ENDPOINT . "/lights/states";
+
+	$defaults = [
+		'method'  => 'PUT',
+		'timeout' => 10,
+		'body'    => [
+			'fast'   => $fast,
+			'states' => $states
+		],
+	];
+
+	$payload = array_merge( $defaults, $headers );
+
+	// Make sure we change the type to a boolean.
+	$payload['body']['fast'] = filter_var( $payload['body']['fast'], FILTER_VALIDATE_BOOLEAN );
+
+	$payload['body'] = wp_json_encode( $payload['body'] );
+
+	$request = wp_safe_remote_post(
+		$endpoint,
+		$payload
+	);
+
+	return $request;
+}
+
+/**
  * A function to get the colours we've setup for our lights.
  *
  * We are using the web browser HTML colours: https://www.quackit.com/html/codes/color/html_color_chart.cfm
