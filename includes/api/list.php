@@ -26,3 +26,27 @@ function list_lights( $selector = 'all' ) {
 
 	return $response;
 }
+
+/**
+ * A function to get the number of zones for lights that support it.
+ * @param $selector
+ *
+ * @return array
+ */
+function zones( $selector = 'all' ) {
+	$lights = list_lights( $selector );
+
+	if ( ! empty( $lights ) ) {
+		$zones = [];
+		foreach ( $lights as $light ) {
+			if ( array_key_exists( 'zones', $light ) ) {
+				$zones[] = [
+					'zones' => $light['zones']['count'],
+					'label' => $light['label']
+				];
+			}
+		}
+	}
+
+	return $zones;
+}

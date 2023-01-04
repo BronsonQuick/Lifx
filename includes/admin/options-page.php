@@ -4,6 +4,7 @@ namespace Lifx\Options_Page;
 use WP_HTTP_Response;
 use function Lifx\Auth\check_token;
 use function Lifx\List_Lights\list_lights;
+use function Lifx\List_Lights\zones;
 use function Lifx\Power\power;
 use function Lifx\State\brightness;
 use function Lifx\State\colour;
@@ -224,6 +225,20 @@ function light_tabs() {
 					);
 				},
 			] );
+
+			$multizone = zones( "id:${light['id']}" );
+
+			if ( ! empty( $multizone ) ) {
+				$lights_options->add_field( array(
+					'name'    => __( 'Multizones', 'lifx' ),
+					'default' => $multizone[0]['zones'],
+					'id'      => "${sanitised_label}_multizone",
+					'type'    => 'text_small',
+					'attributes' => [
+						'readonly' => 'readonly',
+					]
+				) );
+			}
 
 			// Store the device id as a hidden field.
 			$lights_options->add_field( [

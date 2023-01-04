@@ -6,6 +6,7 @@ use function Lifx\Effects\flame;
 use function Lifx\Effects\move;
 use function Lifx\Effects\pulse;
 use function Lifx\List_Lights\list_lights;
+use function Lifx\List_Lights\zones;
 use function Lifx\Power\power;
 use function Lifx\Power\toggle_lights;
 use function Lifx\Scenes\activate_scene;
@@ -1044,14 +1045,39 @@ class Lifx_Command {
 		}
 	}
 
-	public function colors() {
-		$hsl = [
-			'H' => 325,
-			'S' => 1,
-			'L' => 0.5
-		];
-		$hex = Color::hslToHex( $hsl );
-		WP_CLI::success( "The hex value is $hex" );
+	/**
+	 * Check for lights with multizone support on the network.
+	 *
+	 * ## OPTIONS
+	 *
+	 * [--selector=<type>]
+	 * : The selector you wish to use. i.e. label, id, group_id, location, location_id
+	 *
+	 * ## EXAMPLES
+	 *
+	 * wp lifx get_multizones
+	 * wp lifx get_multizones --selector=label:"Beam Me Up!"
+	 *
+	 * @when after_wp_load
+	 */
+	public function get_multizones( $args, $assoc_args ) {
+		if ( ! empty( $assoc_args['selector'] ) ) {
+			$selector = $assoc_args['selector'];
+		} else {
+			$selector = 'all';
+		}
+		// See if any lights support zones.
+		$multizones = zones( $selector );
+
+		if ( ! empty( $multizones ) ) {
+			foreach ( $multizones as $light ) {
+				WP_CLI::success( "${light['label']} supports ${light['zones']} zones." );
+			}
+		} elseif ( $selector !== 'all' ) {
+			WP_CLI::error( "${selector} does not support multizone." );
+		} else {
+			WP_CLI::error( 'No lights on your network support multizone.' );
+		}
 	}
 }
 
