@@ -7,6 +7,7 @@ use function Lifx\List_Lights\list_lights;
 use function Lifx\Power\power;
 use function Lifx\State\brightness;
 use function Lifx\State\colour;
+use Mexitek\PHPColors\Color;
 
 /**
  * Register all our functions for CMB2.
@@ -188,7 +189,8 @@ function light_tabs() {
 						'alpha'    => true,
 						'palettes' => false,
 					] ),
-				]
+				],
+				'escape_cb' => __NAMESPACE__ . '\\hue_to_hex'
 			] );
 
 			// Add a power field.
@@ -285,4 +287,30 @@ function maybe_update_light( $field_id, $updated, $action, $field ) {
 		$brightness = ( $field->value / 100 );
 		brightness( $brightness, false, $selector );
 	}
+}
+
+/**
+ * A function to roughly calculate a hex value from the hue that's returned from the LIFX API.
+ *
+ * @param $value
+ * @param $field_args
+ * @param $field
+ *
+ * @return string
+ * @throws \Exception
+ */
+function hue_to_hex( $value, $field_args, $field ) {
+
+	$label = str_replace( ' Colour', '', $field_args['name'] );
+
+	// Get lights current settings.
+	$details         = list_lights( "label:$label" );
+	$current_color   = Color::hslToHex( [
+		'H' => $details[0]['color']['hue'],
+		'S' => 1,
+		'L' => 0.5,
+		]
+	);
+
+	return $current_color;
 }

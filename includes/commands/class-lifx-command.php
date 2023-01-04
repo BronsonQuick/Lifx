@@ -1042,7 +1042,16 @@ class Lifx_Command {
 				WP_CLI::success( "Effects on {$light['label']} have been cancelled." );
 			}
 		}
+	}
 
+	public function colors() {
+		$hsl = [
+			'H' => 325,
+			'S' => 1,
+			'L' => 0.5
+		];
+		$hex = Color::hslToHex( $hsl );
+		WP_CLI::success( "The hex value is $hex" );
 	}
 }
 
